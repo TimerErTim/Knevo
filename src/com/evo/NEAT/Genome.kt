@@ -31,31 +31,7 @@ class Genome : Comparable<Genome> {
         ENABLE_MUTATION_CHANCE
     }
 
-    /*    private class MutationRates{
-            float STEPS;
-            float PERTURB_CHANCE;
-            float WEIGHT_CHANCE;
-            float WEIGHT_MUTATION_CHANCE;
-            float NODE_MUTATION_CHANCE;
-            float CONNECTION_MUTATION_CHANCE;
-            float BIAS_CONNECTION_MUTATION_CHANCE;
-            float DISABLE_MUTATION_CHANCE;
-            float ENABLE_MUTATION_CHANCE;
-
-             MutationRates() {
-                this.STEPS = Config.STEPS;
-                this.PERTURB_CHANCE = Config.PERTURB_CHANCE;
-                this.WEIGHT_CHANCE = Config.WEIGHT_CHANCE;
-                this.WEIGHT_MUTATION_CHANCE = Config.WEIGHT_MUTATION_CHANCE;
-                this.NODE_MUTATION_CHANCE = Config.NODE_MUTATION_CHANCE;
-                this.CONNECTION_MUTATION_CHANCE = Config.CONNECTION_MUTATION_CHANCE;
-                this.BIAS_CONNECTION_MUTATION_CHANCE = Config.BIAS_CONNECTION_MUTATION_CHANCE;
-                this.DISABLE_MUTATION_CHANCE = Config.DISABLE_MUTATION_CHANCE;
-                this.ENABLE_MUTATION_CHANCE = Config.ENABLE_MUTATION_CHANCE;
-            }
-        }*/
     constructor() {
-
         this.mutationRates[MutationKeys.STEPS] = Config.STEPS
         this.mutationRates[MutationKeys.PERTURB_CHANCE] = Config.PERTURB_CHANCE
         this.mutationRates[MutationKeys.WEIGHT_CHANCE] = Config.WEIGHT_CHANCE

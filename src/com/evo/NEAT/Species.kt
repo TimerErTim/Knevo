@@ -96,15 +96,7 @@ class Species : Comparable<Species> {
         return child
     }
 
-    override operator fun compareTo(s: Species): Int {
-        val top = topFitness
-        val otherTop = s.topFitness
-
-        return if (top == otherTop)
-            0
-        else if (top > otherTop)
-            1
-        else
-            -1
+    override operator fun compareTo(other: Species): Int {
+        return topFitness.compareTo(other.topFitness)
     }
 }

@@ -7,85 +7,39 @@ import java.util.Collections
 
 class Pool {
 
+    private var species = ArrayList<Species>()
 
-    var species = ArrayList<Species>()
-        private set
     private var generations = 0
     private val topFitness: Float = 0.toFloat()
     private var poolStaleness = 0
 
     val topGenome: Genome
-        get() {
-            val allGenome = ArrayList<Genome>()
+        get() = species.flatMap { it.genomes }.maxBy { it.fitness }!!
 
-            for (s in species) {
-                for (g in s.genomes) {
-                    allGenome.add(g)
-                }
-            }
-            Collections.sort(allGenome, Collections.reverseOrder())
-
-            return allGenome[0]
-        }
-
-    val currentPopulation: Int
-        get() {
-            var p = 0
-            for (s in species)
-                p += s.genomes.size
-            return p
-        }
 
     fun initializePool() {
-
         for (i in 0 until Config.POPULATION) {
             addToSpecies(Genome())
         }
-
     }
 
-    fun addToSpecies(g: Genome) {
+    private fun addToSpecies(genome: Genome) {
         for (s in species) {
             if (s.genomes.size == 0)
                 continue
             val g0 = s.genomes[0]
-            //		System.out.println(s.genomes.size());
-            if (Genome.isSameSpecies(g, g0)) {
-                s.genomes.add(g)
+
+            if (Genome.isSameSpecies(genome, g0)) {
+                s.genomes.add(genome)
                 return
             }
         }
         val childSpecies = Species()
-        childSpecies.genomes.add(g)
+        childSpecies.genomes.add(genome)
         species.add(childSpecies)
     }
 
-    fun evaluateFitness() {         //For Testing
-        for (s in species)
-            for (g in s.genomes) {
-                var fitness = 0f
-                g.fitness = 0f
-                for (i in 0..1)
-                    for (j in 0..1) {
-                        val inputs = floatArrayOf(i.toFloat(), j.toFloat())
-                        val output = g.evaluateNetwork(inputs)
-                        val expected = i xor j
-                        //                  System.out.println("Inputs are " + inputs[0] +" " + inputs[1] + " output " + output[0] + " Answer : " + (i ^ j));
-                        //if (output[0] == (i ^ j))
-                        fitness += 1 - Math.abs(expected - output[0])
-                    }
-                fitness = fitness * fitness// * fitness * fitness;
-
-                if (fitness > 15)
-                    println("Fitness : $fitness")
-                g.fitness = fitness
-                //System.out.println("Fitness : "+fitness);
-            }
-        rankGlobally()
-    }
-
     fun evaluateFitness(environment: Environment) {
-
         val allGenome = ArrayList<Genome>()
 
         for (s in species) {
@@ -93,16 +47,6 @@ class Pool {
                 allGenome.add(g)
             }
         }
-
-        /*       for(int i =0; i<allGenome.size(); i++){
-            for(int j = 0; j<allGenome.size(); j++){
-                if(i!=j){
-                    Genome player1 = allGenome.get(i);
-                    Genome player2 = allGenome.get(j);
-                    environment.match(player1,player2);
-                }
-            }
-        }*/
 
         environment.evaluateFitness(allGenome)
         rankGlobally()
@@ -117,31 +61,25 @@ class Pool {
                 allGenome.add(g)
             }
         }
-        Collections.sort(allGenome)
-        //      allGenome.get(allGenome.size()-1).writeTofile();
-        //       System.out.println("TopFitness : "+ allGenome.get(allGenome.size()-1).getFitness());
+        allGenome.sort()
+
         for (i in allGenome.indices) {
             allGenome[i].points = allGenome[i].fitness      //TODO use adjustedFitness and remove points
             allGenome[i].fitness = i.toFloat()
         }
     }
 
-    // all species must have the totalAdjustedFitness calculated
-    fun calculateGlobalAdjustedFitness(): Float {
-        var total = 0f
-        for (s in species) {
-            total += s.totalAdjustedFitness
-        }
-        return total
+    private fun calculateGlobalAdjustedFitness(): Float {
+        return species.sumByDouble { it.totalAdjustedFitness.toDouble() }.toFloat()
     }
 
-    fun removeWeakGenomesFromSpecies(allButOne: Boolean) {
-        for (s in species) {
-            s.removeWeakGenomes(allButOne)
+    private fun removeWeakGenomesFromSpecies() {
+        species.forEach {
+            it.removeWeakGenomes(false)
         }
     }
 
-    fun removeStaleSpecies() {
+    private fun removeStaleSpecies() {
         val survived = ArrayList<Species>()
 
         if (topFitness < getTopFitness()) {
@@ -173,19 +111,17 @@ class Pool {
         poolStaleness++
     }
 
-    fun calculateGenomeAdjustedFitness() {
-        for (s in species) {
-            s.calculateGenomeAdjustedFitness()
+    private fun calculateGenomeAdjustedFitness() {
+        species.forEach {
+            it.calculateGenomeAdjustedFitness()
         }
     }
 
     fun breedNewGeneration(): ArrayList<Genome> {
-
-
         calculateGenomeAdjustedFitness()
         val survived = ArrayList<Species>()
 
-        removeWeakGenomesFromSpecies(false)
+        removeWeakGenomesFromSpecies()
         removeStaleSpecies()
         val globalAdjustedFitness = calculateGlobalAdjustedFitness()
         val children = ArrayList<Genome>()
@@ -222,15 +158,6 @@ class Pool {
         return children
     }
 
-    fun getTopFitness(): Float {
-        var topFitness = 0f
-        var topGenome: Genome? = null
-        for (s in species) {
-            topGenome = s.topGenome
-            if (topGenome!!.fitness > topFitness) {
-                topFitness = topGenome.fitness
-            }
-        }
-        return topFitness
-    }
+    private fun getTopFitness() = topGenome.fitness
+
 }

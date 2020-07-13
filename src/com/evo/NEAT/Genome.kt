@@ -70,7 +70,7 @@ class Genome : Comparable<Genome> {
     constructor(child: Genome) {
 
         for (c in child.connectionGeneList) {
-            this.connectionGeneList.add(ConnectionGene(c))
+            this.connectionGeneList.add(c.clone())
         }
 
         this.fitness = child.fitness
@@ -371,16 +371,16 @@ class Genome : Comparable<Genome> {
 
                 if (geneMap1.containsKey(key) && geneMap2.containsKey(key)) {
                     if (rand.nextBoolean()) {
-                        trait = ConnectionGene(geneMap1[key])
+                        trait = geneMap1[key]?.clone()
                     } else {
-                        trait = ConnectionGene(geneMap2[key])
+                        trait = geneMap2[key]?.clone()
                     }
 
                     if (geneMap1[key]!!.isEnabled != geneMap2[key]!!.isEnabled) {
                         if (rand.nextFloat() < 0.75f)
-                            trait.isEnabled = false
+                            trait?.isEnabled = false
                         else
-                            trait.isEnabled = true
+                            trait?.isEnabled = true
                     }
 
                 } else if (parent1.fitness == parent2.fitness) {               // disjoint or excess and equal fitness

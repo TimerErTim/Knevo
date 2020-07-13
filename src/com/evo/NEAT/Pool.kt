@@ -3,7 +3,6 @@ package com.evo.NEAT
 import com.evo.NEAT.config.Config
 
 import java.util.ArrayList
-import java.util.Collections
 
 class Pool {
 
@@ -24,49 +23,36 @@ class Pool {
     }
 
     private fun addToSpecies(genome: Genome) {
-        for (s in species) {
-            if (s.genomes.size == 0)
+        for (species in species) {
+            if (species.genomes.isEmpty()) {
                 continue
-            val g0 = s.genomes[0]
+            }
 
-            if (Genome.isSameSpecies(genome, g0)) {
-                s.genomes.add(genome)
+            val first = species.genomes.first()
+            if (Genome.isSameSpecies(genome, first)) {
+                species.genomes.add(genome)
                 return
             }
         }
-        val childSpecies = Species()
-        childSpecies.genomes.add(genome)
-        species.add(childSpecies)
+
+        val child = Species()
+        child.genomes.add(genome)
+        species.add(child)
     }
 
     fun evaluateFitness(environment: Environment) {
-        val allGenome = ArrayList<Genome>()
-
-        for (s in species) {
-            for (g in s.genomes) {
-                allGenome.add(g)
-            }
-        }
-
-        environment.evaluateFitness(allGenome)
+        environment.evaluateFitness(species.flatMap { it.genomes })
         rankGlobally()
     }
 
-    // experimental
-    private fun rankGlobally() {                // set fitness to rank
-        val allGenome = ArrayList<Genome>()
-
-        for (s in species) {
-            for (g in s.genomes) {
-                allGenome.add(g)
+    private fun rankGlobally() {
+        species.flatMap { it.genomes }
+            .sorted()
+            .forEachIndexed { index, genome ->
+                //TODO use adjustedFitness and remove points
+                genome.points = genome.fitness
+                genome.fitness = index.toFloat()
             }
-        }
-        allGenome.sort()
-
-        for (i in allGenome.indices) {
-            allGenome[i].points = allGenome[i].fitness      //TODO use adjustedFitness and remove points
-            allGenome[i].fitness = i.toFloat()
-        }
     }
 
     private fun calculateGlobalAdjustedFitness(): Float {
@@ -86,21 +72,21 @@ class Pool {
             poolStaleness = 0
         }
 
-        for (s in species) {
-            val top = s.topGenome
-            if (top.fitness > s.topFitness) {
-                s.topFitness = top.fitness
-                s.staleness = 0
+        for (species in species) {
+            val top = species.topGenome
+            if (top.fitness > species.topFitness) {
+                species.topFitness = top.fitness
+                species.resetStaleness()
             } else {
-                s.staleness = s.staleness + 1     // increment staleness
+                species.increaseStaleness()
             }
 
-            if (s.staleness < Config.STALE_SPECIES || s.topFitness >= this.getTopFitness()) {
-                survived.add(s)
+            if (species.isStale || species.topFitness >= getTopFitness()) {
+                survived.add(species)
             }
         }
 
-        Collections.sort(survived, Collections.reverseOrder())
+        survived.sortDescending()
 
         if (poolStaleness > Config.STALE_POOL) {
             for (i in survived.size downTo 2)
@@ -117,7 +103,7 @@ class Pool {
         }
     }
 
-    fun breedNewGeneration(): ArrayList<Genome> {
+    fun breedNewGeneration() {
         calculateGenomeAdjustedFitness()
         val survived = ArrayList<Species>()
 
@@ -126,9 +112,8 @@ class Pool {
         val globalAdjustedFitness = calculateGlobalAdjustedFitness()
         val children = ArrayList<Genome>()
         var carryOver = 0f
-        for (s in species) {
-            val fchild =
-                Config.POPULATION * (s.totalAdjustedFitness / globalAdjustedFitness)//- 1;       // reconsider
+        for (species in species) {
+            val fchild = Config.POPULATION * (species.totalAdjustedFitness / globalAdjustedFitness)
             var nchild = fchild.toInt()
             carryOver += fchild - nchild
             if (carryOver > 1) {
@@ -139,23 +124,22 @@ class Pool {
             if (nchild < 1)
                 continue
 
-            survived.add(Species(s.topGenome))
-            //s.removeWeakGenome(nchild);
+            survived.add(Species(species.topGenome))
 
-            //children.add(s.getTopGenome());
             for (i in 1 until nchild) {
-                val child = s.breedChild()
+                val child = species.breedChild()
                 children.add(child)
             }
-
-
         }
-        species = survived
-        for (child in children)
+
+        species.clear()
+        species.addAll(survived)
+
+        for (child in children) {
             addToSpecies(child)
-        //clearInnovations();
+        }
+
         generations++
-        return children
     }
 
     private fun getTopFitness() = topGenome.fitness

@@ -4,7 +4,6 @@ import com.evo.NEAT.config.Config
 import com.evo.NEAT.config.Seed
 
 import javax.management.RuntimeErrorException
-import java.io.*
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
@@ -24,9 +23,9 @@ class Genome : Comparable<Genome>, Cloneable {
     // For number of child to breed in species
     var adjustedFitness: Float = 0f
 
-    private val mutationRates = HashMap<MutationKeys, Float>()
+    val mutationRates = HashMap<MutationKeys, Float>()
 
-    private enum class MutationKeys {
+    enum class MutationKeys {
         STEPS,
         PERTURB_CHANCE,
         WEIGHT_CHANCE,
@@ -262,7 +261,6 @@ class Genome : Comparable<Genome>, Cloneable {
         }
     }
 
-
     private fun enableMutate() {
         if (connectionGeneList.isNotEmpty()) {
             val gene = connectionGeneList.random(Seed.random)
@@ -280,6 +278,10 @@ class Genome : Comparable<Genome>, Cloneable {
                 ", connectionGeneList=" + connectionGeneList +
                 ", nodeGenes=" + nodes +
                 '}'.toString()
+    }
+
+    fun adjustFitness(size: Int) {
+        adjustedFitness = fitness / size
     }
 
     companion object {
@@ -316,10 +318,10 @@ class Genome : Comparable<Genome>, Cloneable {
                 val trait: ConnectionGene?
 
                 if (geneMap1.containsKey(key) && geneMap2.containsKey(key)) {
-                    if (rand.nextBoolean()) {
-                        trait = geneMap1[key]?.clone()
+                    trait = if (rand.nextBoolean()) {
+                        geneMap1[key]?.clone()
                     } else {
-                        trait = geneMap2[key]?.clone()
+                        geneMap2[key]?.clone()
                     }
 
                     if (geneMap1[key]!!.isEnabled != geneMap2[key]!!.isEnabled) {
@@ -345,7 +347,8 @@ class Genome : Comparable<Genome>, Cloneable {
                 }
             }
 
-            return child
+            // todo: should not need .clone()
+            return child.clone()
         }
 
 

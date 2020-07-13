@@ -9,16 +9,20 @@ class Species() : Comparable<Species> {
 
     val genomes = ArrayList<Genome>()
 
-    // todo: check if this assignment ever matters
     var topFitness = 0f
-        get() {
-            this.topFitness = topGenome.fitness
-            this.topFitness = topGenome.fitness
-            return field
-        }
 
-    // todo: convert to functions
-    var staleness = 0
+    val isStale: Boolean
+        get() = staleness < Config.STALE_SPECIES
+
+    private var staleness = 0
+
+    fun resetStaleness() {
+        staleness = 0
+    }
+
+    fun increaseStaleness() {
+        staleness++
+    }
 
     private val random = Seed.random
 
@@ -26,21 +30,15 @@ class Species() : Comparable<Species> {
         get() = genomes.sumByDouble { it.adjustedFitness.toDouble() }.toFloat()
 
     val topGenome: Genome
-        get() {
-            genomes.sortDescending()
-
-
-            
-            return genomes[0]
-        }
+        get() = genomes.maxBy { it.fitness }!!
 
     constructor(top: Genome) : this() {
         genomes.add(top)
     }
 
     fun calculateGenomeAdjustedFitness() {
-        for (g in genomes) {
-            g.adjustedFitness = g.fitness / genomes.size
+        for (genome in genomes) {
+            genome.adjustFitness(genomes.size)
         }
     }
 
@@ -56,17 +54,13 @@ class Species() : Comparable<Species> {
 
 
     fun breedChild(): Genome {
-        var child: Genome = if (random.nextFloat() < Config.CROSSOVER_CHANCE) {
-            val g1 = genomes[random.nextInt(genomes.size)]
-            val g2 = genomes[random.nextInt(genomes.size)]
-            Genome.crossOver(g1, g2)
+        val child = if (random.nextFloat() < Config.CROSSOVER_CHANCE) {
+            Genome.crossOver(genomes.random(Seed.random), genomes.random(Seed.random))
         } else {
-            val g1 = genomes[random.nextInt(genomes.size)]
-            g1
+            genomes.random(Seed.random).clone()
         }
-        child = child.clone()
-        child.mutate()
 
+        child.mutate()
         return child
     }
 

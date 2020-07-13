@@ -6,19 +6,25 @@ import com.evo.NEAT.config.Seed
 import javax.management.RuntimeErrorException
 import java.io.*
 import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
-class Genome : Comparable<Genome> {
-    var fitness: Float =
-        0.toFloat()                                          // Global Percentile Rank (higher the better)
+class Genome : Comparable<Genome>, Cloneable {
+    // Global Percentile Rank (higher the better)
+    var fitness: Float = 0.toFloat()
     var points: Float = 0.toFloat()
-    // Can remove below setter-getter after testing
-    var connectionGeneList = ArrayList<ConnectionGene>()           // DNA- MAin archive of gene information
-    private val nodes =
-        TreeMap<Int, NodeGene>()                          // Generated while performing network operation
-    var adjustedFitness: Float =
-        0.toFloat()                                      // For number of child to breed in species
 
-    private var mutationRates = HashMap<MutationKeys, Float>()
+    // DNA- MAin archive of gene information
+    var connectionGeneList = ArrayList<ConnectionGene>()
+
+    // Generated while performing network operation
+    private val nodes =
+        TreeMap<Int, NodeGene>()
+
+    // For number of child to breed in species
+    var adjustedFitness: Float = 0f
+
+    private val mutationRates = HashMap<MutationKeys, Float>()
 
     private enum class MutationKeys {
         STEPS,
@@ -32,33 +38,39 @@ class Genome : Comparable<Genome> {
         ENABLE_MUTATION_CHANCE
     }
 
-    constructor() {
-        this.mutationRates[MutationKeys.STEPS] = Config.STEPS
-        this.mutationRates[MutationKeys.PERTURB_CHANCE] = Config.PERTURB_CHANCE
-        this.mutationRates[MutationKeys.WEIGHT_CHANCE] = Config.WEIGHT_CHANCE
-        this.mutationRates[MutationKeys.WEIGHT_MUTATION_CHANCE] = Config.WEIGHT_MUTATION_CHANCE
-        this.mutationRates[MutationKeys.NODE_MUTATION_CHANCE] = Config.NODE_MUTATION_CHANCE
-        this.mutationRates[MutationKeys.CONNECTION_MUTATION_CHANCE] = Config.CONNECTION_MUTATION_CHANCE
-        this.mutationRates[MutationKeys.BIAS_CONNECTION_MUTATION_CHANCE] = Config.BIAS_CONNECTION_MUTATION_CHANCE
-        this.mutationRates[MutationKeys.DISABLE_MUTATION_CHANCE] = Config.DISABLE_MUTATION_CHANCE
-        this.mutationRates[MutationKeys.ENABLE_MUTATION_CHANCE] = Config.ENABLE_MUTATION_CHANCE
+    init {
+        mutationRates[MutationKeys.STEPS] = Config.STEPS
+        mutationRates[MutationKeys.PERTURB_CHANCE] = Config.PERTURB_CHANCE
+        mutationRates[MutationKeys.WEIGHT_CHANCE] = Config.WEIGHT_CHANCE
+        mutationRates[MutationKeys.WEIGHT_MUTATION_CHANCE] = Config.WEIGHT_MUTATION_CHANCE
+        mutationRates[MutationKeys.NODE_MUTATION_CHANCE] = Config.NODE_MUTATION_CHANCE
+        mutationRates[MutationKeys.CONNECTION_MUTATION_CHANCE] = Config.CONNECTION_MUTATION_CHANCE
+        mutationRates[MutationKeys.BIAS_CONNECTION_MUTATION_CHANCE] = Config.BIAS_CONNECTION_MUTATION_CHANCE
+        mutationRates[MutationKeys.DISABLE_MUTATION_CHANCE] = Config.DISABLE_MUTATION_CHANCE
+        mutationRates[MutationKeys.ENABLE_MUTATION_CHANCE] = Config.ENABLE_MUTATION_CHANCE
     }
 
-    constructor(child: Genome) {
+    // todo: improve
+    public override fun clone(): Genome {
+        val genome = Genome()
 
-        for (c in child.connectionGeneList) {
-            this.connectionGeneList.add(c.clone())
+        for (c in connectionGeneList) {
+            genome.connectionGeneList.add(c.clone())
         }
 
-        this.fitness = child.fitness
-        this.adjustedFitness = child.adjustedFitness
+        genome.fitness = fitness
+        genome.adjustedFitness = adjustedFitness
 
-        this.mutationRates = child.mutationRates.clone() as HashMap<MutationKeys, Float>
+        genome.mutationRates.clear()
 
+        mutationRates.forEach { key, value ->
+            genome.mutationRates[key] = value
+        }
+
+        return genome
     }
 
     private fun generateNetwork() {
-
         nodes.clear()
         //  Input layer
         for (i in 0 until Config.INPUTS) {
@@ -79,8 +91,6 @@ class Genome : Comparable<Genome> {
                 nodes[con.out] = NodeGene(0f)
             nodes[con.out]!!.connections.add(con)
         }
-
-
     }
 
     fun evaluateNetwork(inputs: FloatArray): FloatArray {
@@ -111,38 +121,47 @@ class Genome : Comparable<Genome> {
     }
 
     private fun sigmoid(x: Float): Float {
-        // TODO Auto-generated method stub
         return (1 / (1 + Math.exp(-4.9 * x))).toFloat()
     }
 
     // Mutations
 
-    fun Mutate() {
-        // Mutate mutation rates
+    fun mutate() {
+        // mutate mutation rates
         for ((key, value) in mutationRates) {
-            if (rand.nextBoolean())
+            if (rand.nextBoolean()) {
                 mutationRates[key] = 0.95f * value
-            else
+            } else {
                 mutationRates[key] = 1.05263f * value
+            }
         }
 
-
-        if (rand.nextFloat() <= mutationRates[MutationKeys.WEIGHT_MUTATION_CHANCE]!!)
+        if (rand.nextFloat() <= mutationRates[MutationKeys.WEIGHT_MUTATION_CHANCE]!!) {
             mutateWeight()
-        if (rand.nextFloat() <= mutationRates[MutationKeys.CONNECTION_MUTATION_CHANCE]!!)
+        }
+
+        if (rand.nextFloat() <= mutationRates[MutationKeys.CONNECTION_MUTATION_CHANCE]!!) {
             mutateAddConnection(false)
-        if (rand.nextFloat() <= mutationRates[MutationKeys.BIAS_CONNECTION_MUTATION_CHANCE]!!)
+        }
+
+        if (rand.nextFloat() <= mutationRates[MutationKeys.BIAS_CONNECTION_MUTATION_CHANCE]!!) {
             mutateAddConnection(true)
-        if (rand.nextFloat() <= mutationRates[MutationKeys.NODE_MUTATION_CHANCE]!!)
+        }
+
+        if (rand.nextFloat() <= mutationRates[MutationKeys.NODE_MUTATION_CHANCE]!!) {
             mutateAddNode()
-        if (rand.nextFloat() <= mutationRates[MutationKeys.DISABLE_MUTATION_CHANCE]!!)
+        }
+
+        if (rand.nextFloat() <= mutationRates[MutationKeys.DISABLE_MUTATION_CHANCE]!!) {
             disableMutate()
-        if (rand.nextFloat() <= mutationRates[MutationKeys.ENABLE_MUTATION_CHANCE]!!)
+        }
+
+        if (rand.nextFloat() <= mutationRates[MutationKeys.ENABLE_MUTATION_CHANCE]!!) {
             enableMutate()
+        }
     }
 
-    internal fun mutateWeight() {
-
+    private fun mutateWeight() {
         for (c in connectionGeneList) {
             if (rand.nextFloat() < Config.WEIGHT_CHANCE) {
                 if (rand.nextFloat() < Config.PERTURB_CHANCE)
@@ -153,7 +172,7 @@ class Genome : Comparable<Genome> {
         }
     }
 
-    internal fun mutateAddConnection(forceBais: Boolean) {
+    private fun mutateAddConnection(forceBais: Boolean) {
         generateNetwork()
         var i = 0
         var j = 0
@@ -179,9 +198,6 @@ class Genome : Comparable<Genome> {
             }
             j++
         }
-        //	System.out.println("random1 = "+random1 +" random2 = "+random2);
-        //	System.out.println("Node1 = "+node1 +" node 2 = "+node2);
-
 
         if (node1 >= node2)
             return
@@ -239,30 +255,23 @@ class Genome : Comparable<Genome> {
         }
     }
 
-    internal fun disableMutate() {
-        //generateNetwork();                // remove laters
-        if (connectionGeneList.size > 0) {
-            val randomCon = connectionGeneList[rand.nextInt(connectionGeneList.size)]
-            randomCon.isEnabled = false
+    private fun disableMutate() {
+        if (connectionGeneList.isNotEmpty()) {
+            val gene = connectionGeneList.random(Seed.random)
+            gene.isEnabled = false
         }
     }
 
 
-    internal fun enableMutate() {
-        //generateNetwork();                // remove laters
-        if (connectionGeneList.size > 0) {
-            val randomCon = connectionGeneList[rand.nextInt(connectionGeneList.size)]
-            randomCon.isEnabled = true
+    private fun enableMutate() {
+        if (connectionGeneList.isNotEmpty()) {
+            val gene = connectionGeneList.random(Seed.random)
+            gene.isEnabled = true
         }
     }
 
-    override operator fun compareTo(g: Genome): Int {
-        return if (fitness == g.fitness)
-            0
-        else if (fitness > g.fitness)
-            1
-        else
-            -1
+    override operator fun compareTo(other: Genome): Int {
+        return fitness.compareTo(other.fitness)
     }
 
     override fun toString(): String {
@@ -271,44 +280,6 @@ class Genome : Comparable<Genome> {
                 ", connectionGeneList=" + connectionGeneList +
                 ", nodeGenes=" + nodes +
                 '}'.toString()
-    }
-
-    fun writeTofile() {
-        var bw: BufferedWriter? = null
-        var fw: FileWriter? = null
-        val builder = StringBuilder()
-        for (conn in connectionGeneList) {
-            builder.append(conn.toString() + "\n")
-        }
-        try {
-
-
-            fw = FileWriter("Genome.txt")
-            bw = BufferedWriter(fw)
-            bw.write(builder.toString())
-
-            println("Done")
-
-        } catch (e: IOException) {
-
-            e.printStackTrace()
-
-        } finally {
-
-            try {
-
-                bw?.close()
-
-                fw?.close()
-
-            } catch (ex: IOException) {
-
-                ex.printStackTrace()
-
-            }
-
-        }
-
     }
 
     companion object {
@@ -328,12 +299,10 @@ class Genome : Comparable<Genome> {
             val geneMap2 = TreeMap<Int, ConnectionGene>()
 
             for (con in parent1.connectionGeneList) {
-                assert(!geneMap1.containsKey(con.innovation))             //TODO Remove for better performance
                 geneMap1[con.innovation] = con
             }
 
             for (con in parent2.connectionGeneList) {
-                assert(!geneMap2.containsKey(con.innovation))             //TODO Remove for better performance
                 geneMap2[con.innovation] = con
             }
 
@@ -354,17 +323,14 @@ class Genome : Comparable<Genome> {
                     }
 
                     if (geneMap1[key]!!.isEnabled != geneMap2[key]!!.isEnabled) {
-                        if (rand.nextFloat() < 0.75f)
-                            trait?.isEnabled = false
-                        else
-                            trait?.isEnabled = true
+                        trait?.isEnabled = rand.nextFloat() >= 0.75f
                     }
 
                 } else if (parent1.fitness == parent2.fitness) {               // disjoint or excess and equal fitness
-                    if (geneMap1.containsKey(key))
-                        trait = geneMap1[key]
+                    trait = if (geneMap1.containsKey(key))
+                        geneMap1[key]
                     else
-                        trait = geneMap2[key]
+                        geneMap2[key]
 
                     if (rand.nextBoolean()) {
                         continue
@@ -379,9 +345,7 @@ class Genome : Comparable<Genome> {
                 }
             }
 
-
             return child
-
         }
 
 
@@ -397,12 +361,10 @@ class Genome : Comparable<Genome> {
             var delta = 0f
 
             for (con in g1.connectionGeneList) {
-                assert(!geneMap1.containsKey(con.innovation))             //TODO Remove for better performance
                 geneMap1[con.innovation] = con
             }
 
             for (con in g2.connectionGeneList) {
-                assert(!geneMap2.containsKey(con.innovation))             //TODO Remove for better performance
                 geneMap2[con.innovation] = con
             }
             if (geneMap1.isEmpty() || geneMap2.isEmpty())
@@ -443,5 +405,4 @@ class Genome : Comparable<Genome> {
 
         }
     }
-
 }

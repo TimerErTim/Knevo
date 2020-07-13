@@ -75,7 +75,7 @@ class Pool {
 
     private fun removeWeakGenomesFromSpecies() {
         species.forEach {
-            it.removeWeakGenomes(false)
+            it.removeWeakGenomes()
         }
     }
 

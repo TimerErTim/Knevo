@@ -1,6 +1,6 @@
 package com.evo.NEAT
 
-import com.evo.NEAT.config.NEAT_Config
+import com.evo.NEAT.config.Config
 
 import java.util.ArrayList
 import java.util.Collections
@@ -38,7 +38,7 @@ class Pool {
 
     fun initializePool() {
 
-        for (i in 0 until NEAT_Config.POPULATION) {
+        for (i in 0 until Config.POPULATION) {
             addToSpecies(Genome())
         }
 
@@ -157,14 +157,14 @@ class Pool {
                 s.staleness = s.staleness + 1     // increment staleness
             }
 
-            if (s.staleness < NEAT_Config.STALE_SPECIES || s.topFitness >= this.getTopFitness()) {
+            if (s.staleness < Config.STALE_SPECIES || s.topFitness >= this.getTopFitness()) {
                 survived.add(s)
             }
         }
 
         Collections.sort(survived, Collections.reverseOrder())
 
-        if (poolStaleness > NEAT_Config.STALE_POOL) {
+        if (poolStaleness > Config.STALE_POOL) {
             for (i in survived.size downTo 2)
                 survived.removeAt(i)
         }
@@ -192,7 +192,7 @@ class Pool {
         var carryOver = 0f
         for (s in species) {
             val fchild =
-                NEAT_Config.POPULATION * (s.totalAdjustedFitness / globalAdjustedFitness)//- 1;       // reconsider
+                Config.POPULATION * (s.totalAdjustedFitness / globalAdjustedFitness)//- 1;       // reconsider
             var nchild = fchild.toInt()
             carryOver += fchild - nchild
             if (carryOver > 1) {

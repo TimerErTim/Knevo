@@ -1,6 +1,6 @@
 package com.evo.NEAT
 
-import com.evo.NEAT.config.NEAT_Config
+import com.evo.NEAT.config.Config
 
 import java.util.ArrayList
 import java.util.Collections
@@ -82,7 +82,7 @@ class Species : Comparable<Species> {
 
     fun breedChild(): Genome {
         var child: Genome
-        if (rand.nextFloat() < NEAT_Config.CROSSOVER_CHANCE) {
+        if (rand.nextFloat() < Config.CROSSOVER_CHANCE) {
             val g1 = genomes[rand.nextInt(genomes.size)]
             val g2 = genomes[rand.nextInt(genomes.size)]
             child = Genome.crossOver(g1, g2)

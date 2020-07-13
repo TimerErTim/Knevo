@@ -1,6 +1,6 @@
 package com.evo.NEAT
 
-import com.evo.NEAT.config.NEAT_Config
+import com.evo.NEAT.config.Config
 
 import javax.management.RuntimeErrorException
 import java.io.*
@@ -43,28 +43,28 @@ class Genome : Comparable<Genome> {
             float ENABLE_MUTATION_CHANCE;
 
              MutationRates() {
-                this.STEPS = NEAT_Config.STEPS;
-                this.PERTURB_CHANCE = NEAT_Config.PERTURB_CHANCE;
-                this.WEIGHT_CHANCE = NEAT_Config.WEIGHT_CHANCE;
-                this.WEIGHT_MUTATION_CHANCE = NEAT_Config.WEIGHT_MUTATION_CHANCE;
-                this.NODE_MUTATION_CHANCE = NEAT_Config.NODE_MUTATION_CHANCE;
-                this.CONNECTION_MUTATION_CHANCE = NEAT_Config.CONNECTION_MUTATION_CHANCE;
-                this.BIAS_CONNECTION_MUTATION_CHANCE = NEAT_Config.BIAS_CONNECTION_MUTATION_CHANCE;
-                this.DISABLE_MUTATION_CHANCE = NEAT_Config.DISABLE_MUTATION_CHANCE;
-                this.ENABLE_MUTATION_CHANCE = NEAT_Config.ENABLE_MUTATION_CHANCE;
+                this.STEPS = Config.STEPS;
+                this.PERTURB_CHANCE = Config.PERTURB_CHANCE;
+                this.WEIGHT_CHANCE = Config.WEIGHT_CHANCE;
+                this.WEIGHT_MUTATION_CHANCE = Config.WEIGHT_MUTATION_CHANCE;
+                this.NODE_MUTATION_CHANCE = Config.NODE_MUTATION_CHANCE;
+                this.CONNECTION_MUTATION_CHANCE = Config.CONNECTION_MUTATION_CHANCE;
+                this.BIAS_CONNECTION_MUTATION_CHANCE = Config.BIAS_CONNECTION_MUTATION_CHANCE;
+                this.DISABLE_MUTATION_CHANCE = Config.DISABLE_MUTATION_CHANCE;
+                this.ENABLE_MUTATION_CHANCE = Config.ENABLE_MUTATION_CHANCE;
             }
         }*/
     constructor() {
 
-        this.mutationRates[MutationKeys.STEPS] = NEAT_Config.STEPS
-        this.mutationRates[MutationKeys.PERTURB_CHANCE] = NEAT_Config.PERTURB_CHANCE
-        this.mutationRates[MutationKeys.WEIGHT_CHANCE] = NEAT_Config.WEIGHT_CHANCE
-        this.mutationRates[MutationKeys.WEIGHT_MUTATION_CHANCE] = NEAT_Config.WEIGHT_MUTATION_CHANCE
-        this.mutationRates[MutationKeys.NODE_MUTATION_CHANCE] = NEAT_Config.NODE_MUTATION_CHANCE
-        this.mutationRates[MutationKeys.CONNECTION_MUTATION_CHANCE] = NEAT_Config.CONNECTION_MUTATION_CHANCE
-        this.mutationRates[MutationKeys.BIAS_CONNECTION_MUTATION_CHANCE] = NEAT_Config.BIAS_CONNECTION_MUTATION_CHANCE
-        this.mutationRates[MutationKeys.DISABLE_MUTATION_CHANCE] = NEAT_Config.DISABLE_MUTATION_CHANCE
-        this.mutationRates[MutationKeys.ENABLE_MUTATION_CHANCE] = NEAT_Config.ENABLE_MUTATION_CHANCE
+        this.mutationRates[MutationKeys.STEPS] = Config.STEPS
+        this.mutationRates[MutationKeys.PERTURB_CHANCE] = Config.PERTURB_CHANCE
+        this.mutationRates[MutationKeys.WEIGHT_CHANCE] = Config.WEIGHT_CHANCE
+        this.mutationRates[MutationKeys.WEIGHT_MUTATION_CHANCE] = Config.WEIGHT_MUTATION_CHANCE
+        this.mutationRates[MutationKeys.NODE_MUTATION_CHANCE] = Config.NODE_MUTATION_CHANCE
+        this.mutationRates[MutationKeys.CONNECTION_MUTATION_CHANCE] = Config.CONNECTION_MUTATION_CHANCE
+        this.mutationRates[MutationKeys.BIAS_CONNECTION_MUTATION_CHANCE] = Config.BIAS_CONNECTION_MUTATION_CHANCE
+        this.mutationRates[MutationKeys.DISABLE_MUTATION_CHANCE] = Config.DISABLE_MUTATION_CHANCE
+        this.mutationRates[MutationKeys.ENABLE_MUTATION_CHANCE] = Config.ENABLE_MUTATION_CHANCE
     }
 
     constructor(child: Genome) {
@@ -84,13 +84,13 @@ class Genome : Comparable<Genome> {
 
         nodes.clear()
         //  Input layer
-        for (i in 0 until NEAT_Config.INPUTS) {
+        for (i in 0 until Config.INPUTS) {
             nodes[i] = NodeGene(0f)                    //Inputs
         }
-        nodes[NEAT_Config.INPUTS] = NodeGene(1f)        // Bias
+        nodes[Config.INPUTS] = NodeGene(1f)        // Bias
 
         //output layer
-        for (i in NEAT_Config.INPUTS + NEAT_Config.HIDDEN_NODES until NEAT_Config.INPUTS + NEAT_Config.HIDDEN_NODES + NEAT_Config.OUTPUTS) {
+        for (i in Config.INPUTS + Config.HIDDEN_NODES until Config.INPUTS + Config.HIDDEN_NODES + Config.OUTPUTS) {
             nodes[i] = NodeGene(0f)
         }
 
@@ -107,17 +107,17 @@ class Genome : Comparable<Genome> {
     }
 
     fun evaluateNetwork(inputs: FloatArray): FloatArray {
-        val output = FloatArray(NEAT_Config.OUTPUTS)
+        val output = FloatArray(Config.OUTPUTS)
         generateNetwork()
 
-        for (i in 0 until NEAT_Config.INPUTS) {
+        for (i in 0 until Config.INPUTS) {
             nodes[i]!!.value = inputs[i]
         }
 
         for ((key, node) in nodes) {
             var sum = 0f
 
-            if (key > NEAT_Config.INPUTS) {
+            if (key > Config.INPUTS) {
                 for (conn in node.connections) {
                     if (conn.isEnabled) {
                         sum += nodes[conn.into]!!.value * conn.weight
@@ -127,8 +127,8 @@ class Genome : Comparable<Genome> {
             }
         }
 
-        for (i in 0 until NEAT_Config.OUTPUTS) {
-            output[i] = nodes[NEAT_Config.INPUTS + NEAT_Config.HIDDEN_NODES + i]!!.value
+        for (i in 0 until Config.OUTPUTS) {
+            output[i] = nodes[Config.INPUTS + Config.HIDDEN_NODES + i]!!.value
         }
         return output
     }
@@ -167,9 +167,9 @@ class Genome : Comparable<Genome> {
     internal fun mutateWeight() {
 
         for (c in connectionGeneList) {
-            if (rand.nextFloat() < NEAT_Config.WEIGHT_CHANCE) {
-                if (rand.nextFloat() < NEAT_Config.PERTURB_CHANCE)
-                    c.weight = c.weight + (2 * rand.nextFloat() - 1) * NEAT_Config.STEPS
+            if (rand.nextFloat() < Config.WEIGHT_CHANCE) {
+                if (rand.nextFloat() < Config.PERTURB_CHANCE)
+                    c.weight = c.weight + (2 * rand.nextFloat() - 1) * Config.STEPS
                 else
                     c.weight = 4 * rand.nextFloat() - 2
             }
@@ -180,10 +180,10 @@ class Genome : Comparable<Genome> {
         generateNetwork()
         var i = 0
         var j = 0
-        val random2 = rand.nextInt(nodes.size - NEAT_Config.INPUTS - 1) + NEAT_Config.INPUTS + 1
+        val random2 = rand.nextInt(nodes.size - Config.INPUTS - 1) + Config.INPUTS + 1
         var random1 = rand.nextInt(nodes.size)
         if (forceBais)
-            random1 = NEAT_Config.INPUTS
+            random1 = Config.INPUTS
         var node1 = -1
         var node2 = -1
 
@@ -236,10 +236,10 @@ class Genome : Comparable<Genome> {
             while (!randomCon.isEnabled) {
                 randomCon = connectionGeneList[rand.nextInt(connectionGeneList.size)]
                 timeoutCount++
-                if (timeoutCount > NEAT_Config.HIDDEN_NODES)
+                if (timeoutCount > Config.HIDDEN_NODES)
                     return
             }
-            val nextNode = nodes.size - NEAT_Config.OUTPUTS
+            val nextNode = nodes.size - Config.OUTPUTS
             randomCon.isEnabled = false
             connectionGeneList.add(
                 ConnectionGene(
@@ -397,7 +397,7 @@ class Genome : Comparable<Genome> {
                     trait = geneMap1[key]
 
 
-                if(trait != null) {
+                if (trait != null) {
                     child.connectionGeneList.add(trait)
                 }
             }
@@ -460,9 +460,9 @@ class Genome : Comparable<Genome> {
 
             if (N > 0)
                 delta =
-                    (NEAT_Config.EXCESS_COEFFICENT * excess + NEAT_Config.DISJOINT_COEFFICENT * disjoint) / N + NEAT_Config.WEIGHT_COEFFICENT * weight / matching
+                    (Config.EXCESS_COEFFICENT * excess + Config.DISJOINT_COEFFICENT * disjoint) / N + Config.WEIGHT_COEFFICENT * weight / matching
 
-            return delta < NEAT_Config.COMPATIBILITY_THRESHOLD
+            return delta < Config.COMPATIBILITY_THRESHOLD
 
         }
     }

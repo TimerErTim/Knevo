@@ -1,0 +1,30 @@
+package com.evo.NEAT.config
+
+object NEAT_Config {
+
+    val INPUTS = 2
+    val OUTPUTS = 1
+    val HIDDEN_NODES = 1000000
+    val POPULATION = 300
+
+    val COMPATIBILITY_THRESHOLD = 1f
+    val EXCESS_COEFFICENT = 2f
+    val DISJOINT_COEFFICENT = 2f
+    val WEIGHT_COEFFICENT = 0.4f
+
+    val STALE_SPECIES = 15f
+
+
+    val STEPS = 0.1f
+    val PERTURB_CHANCE = 0.9f
+    val WEIGHT_CHANCE = 0.3f
+    val WEIGHT_MUTATION_CHANCE = 0.9f
+    val NODE_MUTATION_CHANCE = 0.03f
+    val CONNECTION_MUTATION_CHANCE = 0.05f
+    val BIAS_CONNECTION_MUTATION_CHANCE = 0.15f
+    val DISABLE_MUTATION_CHANCE = 0.1f
+    val ENABLE_MUTATION_CHANCE = 0.2f
+    val CROSSOVER_CHANCE = 0.75f
+
+    val STALE_POOL = 20
+}

@@ -3,7 +3,6 @@ package examples
 import com.evo.NEAT.Environment
 import com.evo.NEAT.Genome
 import com.evo.NEAT.Pool
-import java.util.ArrayList
 
 fun main() {
     val xor = XOR()
@@ -30,7 +29,7 @@ fun main() {
 
 class XOR : Environment {
 
-    override fun evaluateFitness(population: ArrayList<Genome>) {
+    override fun evaluateFitness(population: List<Genome>) {
         for (gene in population) {
             var fitness = 0f
             gene.fitness = 0f

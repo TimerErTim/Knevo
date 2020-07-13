@@ -1,35 +1,31 @@
 package com.evo.NEAT
 
 import com.evo.NEAT.config.Config
+import com.evo.NEAT.config.Seed
 
 import java.util.ArrayList
 import java.util.Collections
 import java.util.Random
 
-/**
- * Created by vishnu on 7/1/17.
- */
 class Species : Comparable<Species> {
-    var genomes = ArrayList<Genome>()
-        private set
+
+    val genomes = ArrayList<Genome>()
+
+    // todo: check if this assignment ever matters
     var topFitness = 0f
         get() {
             this.topFitness = topGenome.fitness
             this.topFitness = topGenome.fitness
             return field
         }
+
+    // todo: convert to functions
     var staleness = 0
-    internal var rand = Random()
+
+    private val random = Seed.random
 
     val totalAdjustedFitness: Float
-        get() {
-            var totalAdjustedFitness = 0f
-            for (g in genomes) {
-                totalAdjustedFitness += g.adjustedFitness
-            }
-
-            return totalAdjustedFitness
-        }
+        get() = genomes.sumByDouble { it.adjustedFitness.toDouble() }.toFloat()
 
     val topGenome: Genome
         get() {
@@ -52,8 +48,7 @@ class Species : Comparable<Species> {
 
 
     private fun sortGenomes() {
-        //sort internally genomes
-        Collections.sort(genomes, Collections.reverseOrder())
+        genomes.sortDescending()
     }
 
     fun removeWeakGenomes(allButOne: Boolean) {
@@ -66,7 +61,9 @@ class Species : Comparable<Species> {
         for (i in 0 until surviveCount) {
             survivedGenomes.add(Genome(genomes[i]))
         }
-        genomes = survivedGenomes
+
+        genomes.clear()
+        genomes.addAll(survivedGenomes)
     }
 
     @Deprecated("")
@@ -76,18 +73,20 @@ class Species : Comparable<Species> {
         for (i in 0 until genomes.size - childrenToRemove) {
             survived.add(genomes[i])
         }
-        genomes = survived
+
+        genomes.clear()
+        genomes.addAll(survived)
     }
 
 
     fun breedChild(): Genome {
         var child: Genome
-        if (rand.nextFloat() < Config.CROSSOVER_CHANCE) {
-            val g1 = genomes[rand.nextInt(genomes.size)]
-            val g2 = genomes[rand.nextInt(genomes.size)]
+        if (random.nextFloat() < Config.CROSSOVER_CHANCE) {
+            val g1 = genomes[random.nextInt(genomes.size)]
+            val g2 = genomes[random.nextInt(genomes.size)]
             child = Genome.crossOver(g1, g2)
         } else {
-            val g1 = genomes[rand.nextInt(genomes.size)]
+            val g1 = genomes[random.nextInt(genomes.size)]
             child = g1
         }
         child = Genome(child)

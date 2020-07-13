@@ -1,6 +1,7 @@
 package com.evo.NEAT
 
 import com.evo.NEAT.config.Config
+import com.evo.NEAT.config.Seed
 
 import javax.management.RuntimeErrorException
 import java.io.*
@@ -311,7 +312,7 @@ class Genome : Comparable<Genome> {
     }
 
     companion object {
-        private val rand = Random()
+        private val rand = Seed.random
 
         fun crossOver(parent1: Genome, parent2: Genome): Genome {
             var parent1 = parent1

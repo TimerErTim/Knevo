@@ -1,6 +1,7 @@
 package com.evo.NEAT
 
-import com.evo.NEAT.config.Config
+import com.evo.NEAT.config.NEATConfig
+import com.evo.NEAT.config.Defaults
 import com.evo.NEAT.config.Seed
 
 import javax.management.RuntimeErrorException
@@ -8,7 +9,7 @@ import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
-class Genome : Comparable<Genome>, Cloneable {
+class Genome(private val config: NEATConfig) : Comparable<Genome>, Cloneable {
     // Global Percentile Rank (higher the better)
     var fitness: Float = 0.toFloat()
     var points: Float = 0.toFloat()
@@ -38,20 +39,20 @@ class Genome : Comparable<Genome>, Cloneable {
     }
 
     init {
-        mutationRates[MutationKeys.STEPS] = Config.STEPS
-        mutationRates[MutationKeys.PERTURB_CHANCE] = Config.PERTURB_CHANCE
-        mutationRates[MutationKeys.WEIGHT_CHANCE] = Config.WEIGHT_CHANCE
-        mutationRates[MutationKeys.WEIGHT_MUTATION_CHANCE] = Config.WEIGHT_MUTATION_CHANCE
-        mutationRates[MutationKeys.NODE_MUTATION_CHANCE] = Config.NODE_MUTATION_CHANCE
-        mutationRates[MutationKeys.CONNECTION_MUTATION_CHANCE] = Config.CONNECTION_MUTATION_CHANCE
-        mutationRates[MutationKeys.BIAS_CONNECTION_MUTATION_CHANCE] = Config.BIAS_CONNECTION_MUTATION_CHANCE
-        mutationRates[MutationKeys.DISABLE_MUTATION_CHANCE] = Config.DISABLE_MUTATION_CHANCE
-        mutationRates[MutationKeys.ENABLE_MUTATION_CHANCE] = Config.ENABLE_MUTATION_CHANCE
+        mutationRates[MutationKeys.STEPS] = Defaults.STEPS
+        mutationRates[MutationKeys.PERTURB_CHANCE] = Defaults.PERTURB_CHANCE
+        mutationRates[MutationKeys.WEIGHT_CHANCE] = Defaults.WEIGHT_CHANCE
+        mutationRates[MutationKeys.WEIGHT_MUTATION_CHANCE] = Defaults.WEIGHT_MUTATION_CHANCE
+        mutationRates[MutationKeys.NODE_MUTATION_CHANCE] = Defaults.NODE_MUTATION_CHANCE
+        mutationRates[MutationKeys.CONNECTION_MUTATION_CHANCE] = Defaults.CONNECTION_MUTATION_CHANCE
+        mutationRates[MutationKeys.BIAS_CONNECTION_MUTATION_CHANCE] = Defaults.BIAS_CONNECTION_MUTATION_CHANCE
+        mutationRates[MutationKeys.DISABLE_MUTATION_CHANCE] = Defaults.DISABLE_MUTATION_CHANCE
+        mutationRates[MutationKeys.ENABLE_MUTATION_CHANCE] = Defaults.ENABLE_MUTATION_CHANCE
     }
 
     // todo: improve
     public override fun clone(): Genome {
-        val genome = Genome()
+        val genome = Genome(config)
 
         for (c in connectionGeneList) {
             genome.connectionGeneList.add(c.clone())
@@ -72,13 +73,13 @@ class Genome : Comparable<Genome>, Cloneable {
     private fun generateNetwork() {
         nodes.clear()
         //  Input layer
-        for (i in 0 until Config.INPUTS) {
+        for (i in 0 until config.inputs) {
             nodes[i] = NodeGene(0f)                    //Inputs
         }
-        nodes[Config.INPUTS] = NodeGene(1f)        // Bias
+        nodes[config.inputs] = NodeGene(1f)        // Bias
 
         //output layer
-        for (i in Config.INPUTS + Config.HIDDEN_NODES until Config.INPUTS + Config.HIDDEN_NODES + Config.OUTPUTS) {
+        for (i in config.inputs + config.hiddenNodes until config.inputs + config.hiddenNodes + config.outputs) {
             nodes[i] = NodeGene(0f)
         }
 
@@ -93,17 +94,17 @@ class Genome : Comparable<Genome>, Cloneable {
     }
 
     fun evaluateNetwork(inputs: FloatArray): FloatArray {
-        val output = FloatArray(Config.OUTPUTS)
+        val output = FloatArray(config.outputs)
         generateNetwork()
 
-        for (i in 0 until Config.INPUTS) {
+        for (i in 0 until config.inputs) {
             nodes[i]!!.value = inputs[i]
         }
 
         for ((key, node) in nodes) {
             var sum = 0f
 
-            if (key > Config.INPUTS) {
+            if (key > config.inputs) {
                 for (conn in node.connections) {
                     if (conn.isEnabled) {
                         sum += nodes[conn.into]!!.value * conn.weight
@@ -113,8 +114,8 @@ class Genome : Comparable<Genome>, Cloneable {
             }
         }
 
-        for (i in 0 until Config.OUTPUTS) {
-            output[i] = nodes[Config.INPUTS + Config.HIDDEN_NODES + i]!!.value
+        for (i in 0 until config.outputs) {
+            output[i] = nodes[config.inputs + config.hiddenNodes + i]!!.value
         }
         return output
     }
@@ -162,9 +163,9 @@ class Genome : Comparable<Genome>, Cloneable {
 
     private fun mutateWeight() {
         for (c in connectionGeneList) {
-            if (Seed.random.nextFloat() < Config.WEIGHT_CHANCE) {
-                if (Seed.random.nextFloat() < Config.PERTURB_CHANCE)
-                    c.weight = c.weight + (2 * Seed.random.nextFloat() - 1) * Config.STEPS
+            if (Seed.random.nextFloat() < Defaults.WEIGHT_CHANCE) {
+                if (Seed.random.nextFloat() < Defaults.PERTURB_CHANCE)
+                    c.weight = c.weight + (2 * Seed.random.nextFloat() - 1) * Defaults.STEPS
                 else
                     c.weight = 4 * Seed.random.nextFloat() - 2
             }
@@ -175,10 +176,10 @@ class Genome : Comparable<Genome>, Cloneable {
         generateNetwork()
         var i = 0
         var j = 0
-        val random2 = Seed.random.nextInt(nodes.size - Config.INPUTS - 1) + Config.INPUTS + 1
+        val random2 = Seed.random.nextInt(nodes.size - config.inputs - 1) + config.inputs + 1
         var random1 = Seed.random.nextInt(nodes.size)
         if (forceBais)
-            random1 = Config.INPUTS
+            random1 = config.inputs
         var node1 = -1
         var node2 = -1
 
@@ -228,10 +229,10 @@ class Genome : Comparable<Genome>, Cloneable {
             while (!randomCon.isEnabled) {
                 randomCon = connectionGeneList[Seed.random.nextInt(connectionGeneList.size)]
                 timeoutCount++
-                if (timeoutCount > Config.HIDDEN_NODES)
+                if (timeoutCount > config.hiddenNodes)
                     return
             }
-            val nextNode = nodes.size - Config.OUTPUTS
+            val nextNode = nodes.size - config.outputs
             randomCon.isEnabled = false
             connectionGeneList.add(
                 ConnectionGene(
@@ -295,7 +296,7 @@ class Genome : Comparable<Genome>, Cloneable {
                 parent2 = temp
             }
 
-            val child = Genome()
+            val child = Genome(parent1.config)
             val geneMap1 = TreeMap<Int, ConnectionGene>()
             val geneMap2 = TreeMap<Int, ConnectionGene>()
 
@@ -401,9 +402,9 @@ class Genome : Comparable<Genome>, Cloneable {
 
             if (N > 0)
                 delta =
-                    (Config.EXCESS_COEFFICENT * excess + Config.DISJOINT_COEFFICENT * disjoint) / N + Config.WEIGHT_COEFFICENT * weight / matching
+                    (Defaults.EXCESS_COEFFICENT * excess + Defaults.DISJOINT_COEFFICENT * disjoint) / N + Defaults.WEIGHT_COEFFICENT * weight / matching
 
-            return delta < Config.COMPATIBILITY_THRESHOLD
+            return delta < Defaults.COMPATIBILITY_THRESHOLD
 
         }
     }

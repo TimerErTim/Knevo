@@ -1,12 +1,12 @@
 package com.evo.NEAT.config
 
-object Config {
+object Defaults {
 
-    const val INPUTS = 2
-    const val OUTPUTS = 1
-    const val HIDDEN_NODES = 1000000
-    const val POPULATION = 300
-    const val BATCH_SIZE = 100
+    internal const val INPUTS = 2
+    internal const val OUTPUTS = 1
+    internal const val HIDDEN_NODES = 1000000
+    internal const val POPULATION = 300
+    internal const val BATCH_SIZE = 100
 
     const val COMPATIBILITY_THRESHOLD = 1f
     const val EXCESS_COEFFICENT = 2f
@@ -28,3 +28,4 @@ object Config {
 
     const val STALE_POOL = 20
 }
+

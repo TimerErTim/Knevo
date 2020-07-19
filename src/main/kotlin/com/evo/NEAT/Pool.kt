@@ -1,11 +1,12 @@
 package com.evo.NEAT
 
-import com.evo.NEAT.config.Config
+import com.evo.NEAT.config.NEATConfig
+import com.evo.NEAT.config.Defaults
 import kotlinx.coroutines.*
 
 import java.util.ArrayList
 
-class Pool {
+class Pool(private val config: NEATConfig = NEATConfig()) {
 
     private var species = ArrayList<Species>()
 
@@ -18,8 +19,8 @@ class Pool {
 
 
     fun initializePool() {
-        for (i in 0 until Config.POPULATION) {
-            addToSpecies(Genome())
+        for (i in 0 until config.population) {
+            addToSpecies(Genome(config))
         }
     }
 
@@ -44,7 +45,7 @@ class Pool {
     fun evaluateFitness(environment: Environment) {
         runBlocking {
             species.flatMap { it.genomes }
-                .chunked(Config.BATCH_SIZE)
+                .chunked(config.batchSize)
                 .map {
                     launch(context = Dispatchers.Default) {
                         environment.evaluateFitness(it)
@@ -98,7 +99,7 @@ class Pool {
 
         survived.sortDescending()
 
-        if (poolStaleness > Config.STALE_POOL) {
+        if (poolStaleness > Defaults.STALE_POOL) {
             for (i in survived.size downTo 2)
                 survived.removeAt(i)
         }
@@ -123,7 +124,7 @@ class Pool {
         val children = ArrayList<Genome>()
         var carryOver = 0f
         for (species in species) {
-            val fchild = Config.POPULATION * (species.totalAdjustedFitness / globalAdjustedFitness)
+            val fchild = config.population * (species.totalAdjustedFitness / globalAdjustedFitness)
             var nchild = fchild.toInt()
             carryOver += fchild - nchild
             if (carryOver > 1) {

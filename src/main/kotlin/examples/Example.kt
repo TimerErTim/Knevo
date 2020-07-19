@@ -3,15 +3,24 @@ package examples
 import com.evo.NEAT.Environment
 import com.evo.NEAT.Genome
 import com.evo.NEAT.Pool
+import com.evo.NEAT.config.NEATConfig
 
 fun main() {
     val xor = XOR()
 
-    val pool = Pool()
+    val config = NEATConfig.Builder()
+        .setPopulationSize(300)
+        .setBatchSize(100)
+        .setInputs(2)
+        .setOutputs(1)
+        .build()
+
+    val pool = Pool(config)
     pool.initializePool()
 
     var topGenome: Genome
     var generation = 0
+
 
     do {
         pool.evaluateFitness(xor)

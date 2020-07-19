@@ -1,6 +1,6 @@
 package com.evo.NEAT
 
-import com.evo.NEAT.config.Config
+import com.evo.NEAT.config.Defaults
 import com.evo.NEAT.config.Seed
 
 import java.util.ArrayList
@@ -12,7 +12,7 @@ class Species() : Comparable<Species> {
     var topFitness = 0f
 
     val isStale: Boolean
-        get() = staleness < Config.STALE_SPECIES
+        get() = staleness < Defaults.STALE_SPECIES
 
     private var staleness = 0
 
@@ -54,7 +54,7 @@ class Species() : Comparable<Species> {
 
 
     fun breedChild(): Genome {
-        val child = if (random.nextFloat() < Config.CROSSOVER_CHANCE) {
+        val child = if (random.nextFloat() < Defaults.CROSSOVER_CHANCE) {
             Genome.crossOver(genomes.random(Seed.random), genomes.random(Seed.random))
         } else {
             genomes.random(Seed.random).clone()

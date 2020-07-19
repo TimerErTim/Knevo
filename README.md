@@ -33,6 +33,17 @@ You can config how the model is created using the `NEATConfig.Builder`.
         .setInputs(2)
         .setOutputs(1)
         .build()
+
+### Coroutines
+For each generation, the library will separate them into batches and calculate their fitness in parallel. The number of Coroutines is based on the population size / the batch size.
+
+With the following config, the library will create `10` Coroutines each generation.
+
+    val config: NeatConfig = NEATConfig.Builder()
+        .setPopulationSize(500)
+        .setBatchSize(50)
+	.build()
+
         
 ### Example
 A full example of the XOR implementation is given in the folder evo-NEAT/src/examples/  .

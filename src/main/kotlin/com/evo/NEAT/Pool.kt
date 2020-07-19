@@ -1,10 +1,7 @@
 package com.evo.NEAT
 
 import com.evo.NEAT.config.Config
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 
 import java.util.ArrayList
 
@@ -48,11 +45,11 @@ class Pool {
         runBlocking {
             species.flatMap { it.genomes }
                 .chunked(Config.BATCH_SIZE)
-                .forEach {
-                    launch {
+                .map {
+                    launch(context = Dispatchers.Default) {
                         environment.evaluateFitness(it)
                     }
-                }
+                }.joinAll()
         }
 
         rankGlobally()

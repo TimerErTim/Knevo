@@ -2,8 +2,12 @@ package com.evo.NEAT
 
 object InnovationCounter {
 
-    private var innovation = 0
+    var innovation = 0
 
     fun newInnovation() = ++innovation
+
+    fun reset() {
+        innovation = 0
+    }
 
 }

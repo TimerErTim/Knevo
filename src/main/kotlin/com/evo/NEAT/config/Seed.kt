@@ -5,6 +5,6 @@ import kotlin.random.Random
 object Seed {
 
     // todo: remove constant seed
-    val random = Random(3000L)
+    var random = Random(3000L)
 
 }

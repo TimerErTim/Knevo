@@ -128,45 +128,45 @@ class Genome : Comparable<Genome>, Cloneable {
     fun mutate() {
         // mutate mutation rates
         for ((key, value) in mutationRates) {
-            if (rand.nextBoolean()) {
+            if (Seed.random.nextBoolean()) {
                 mutationRates[key] = 0.95f * value
             } else {
                 mutationRates[key] = 1.05263f * value
             }
         }
 
-        if (rand.nextFloat() <= mutationRates[MutationKeys.WEIGHT_MUTATION_CHANCE]!!) {
+        if (Seed.random.nextFloat() <= mutationRates[MutationKeys.WEIGHT_MUTATION_CHANCE]!!) {
             mutateWeight()
         }
 
-        if (rand.nextFloat() <= mutationRates[MutationKeys.CONNECTION_MUTATION_CHANCE]!!) {
+        if (Seed.random.nextFloat() <= mutationRates[MutationKeys.CONNECTION_MUTATION_CHANCE]!!) {
             mutateAddConnection(false)
         }
 
-        if (rand.nextFloat() <= mutationRates[MutationKeys.BIAS_CONNECTION_MUTATION_CHANCE]!!) {
+        if (Seed.random.nextFloat() <= mutationRates[MutationKeys.BIAS_CONNECTION_MUTATION_CHANCE]!!) {
             mutateAddConnection(true)
         }
 
-        if (rand.nextFloat() <= mutationRates[MutationKeys.NODE_MUTATION_CHANCE]!!) {
+        if (Seed.random.nextFloat() <= mutationRates[MutationKeys.NODE_MUTATION_CHANCE]!!) {
             mutateAddNode()
         }
 
-        if (rand.nextFloat() <= mutationRates[MutationKeys.DISABLE_MUTATION_CHANCE]!!) {
+        if (Seed.random.nextFloat() <= mutationRates[MutationKeys.DISABLE_MUTATION_CHANCE]!!) {
             disableMutate()
         }
 
-        if (rand.nextFloat() <= mutationRates[MutationKeys.ENABLE_MUTATION_CHANCE]!!) {
+        if (Seed.random.nextFloat() <= mutationRates[MutationKeys.ENABLE_MUTATION_CHANCE]!!) {
             enableMutate()
         }
     }
 
     private fun mutateWeight() {
         for (c in connectionGeneList) {
-            if (rand.nextFloat() < Config.WEIGHT_CHANCE) {
-                if (rand.nextFloat() < Config.PERTURB_CHANCE)
-                    c.weight = c.weight + (2 * rand.nextFloat() - 1) * Config.STEPS
+            if (Seed.random.nextFloat() < Config.WEIGHT_CHANCE) {
+                if (Seed.random.nextFloat() < Config.PERTURB_CHANCE)
+                    c.weight = c.weight + (2 * Seed.random.nextFloat() - 1) * Config.STEPS
                 else
-                    c.weight = 4 * rand.nextFloat() - 2
+                    c.weight = 4 * Seed.random.nextFloat() - 2
             }
         }
     }
@@ -175,8 +175,8 @@ class Genome : Comparable<Genome>, Cloneable {
         generateNetwork()
         var i = 0
         var j = 0
-        val random2 = rand.nextInt(nodes.size - Config.INPUTS - 1) + Config.INPUTS + 1
-        var random1 = rand.nextInt(nodes.size)
+        val random2 = Seed.random.nextInt(nodes.size - Config.INPUTS - 1) + Config.INPUTS + 1
+        var random1 = Seed.random.nextInt(nodes.size)
         if (forceBais)
             random1 = Config.INPUTS
         var node1 = -1
@@ -213,7 +213,7 @@ class Genome : Comparable<Genome>, Cloneable {
                 node1,
                 node2,
                 InnovationCounter.newInnovation(),
-                4 * rand.nextFloat() - 2,
+                4 * Seed.random.nextFloat() - 2,
                 true
             )
         )                // Add innovation and weight
@@ -224,9 +224,9 @@ class Genome : Comparable<Genome>, Cloneable {
         generateNetwork()
         if (connectionGeneList.size > 0) {
             var timeoutCount = 0
-            var randomCon = connectionGeneList[rand.nextInt(connectionGeneList.size)]
+            var randomCon = connectionGeneList[Seed.random.nextInt(connectionGeneList.size)]
             while (!randomCon.isEnabled) {
-                randomCon = connectionGeneList[rand.nextInt(connectionGeneList.size)]
+                randomCon = connectionGeneList[Seed.random.nextInt(connectionGeneList.size)]
                 timeoutCount++
                 if (timeoutCount > Config.HIDDEN_NODES)
                     return
@@ -285,7 +285,6 @@ class Genome : Comparable<Genome>, Cloneable {
     }
 
     companion object {
-        private val rand = Seed.random
 
         fun crossOver(parent1: Genome, parent2: Genome): Genome {
             var parent1 = parent1
@@ -318,14 +317,14 @@ class Genome : Comparable<Genome>, Cloneable {
                 val trait: ConnectionGene?
 
                 if (geneMap1.containsKey(key) && geneMap2.containsKey(key)) {
-                    trait = if (rand.nextBoolean()) {
+                    trait = if (Seed.random.nextBoolean()) {
                         geneMap1[key]?.clone()
                     } else {
                         geneMap2[key]?.clone()
                     }
 
                     if (geneMap1[key]!!.isEnabled != geneMap2[key]!!.isEnabled) {
-                        trait?.isEnabled = rand.nextFloat() >= 0.75f
+                        trait?.isEnabled = Seed.random.nextFloat() >= 0.75f
                     }
 
                 } else if (parent1.fitness == parent2.fitness) {               // disjoint or excess and equal fitness
@@ -334,7 +333,7 @@ class Genome : Comparable<Genome>, Cloneable {
                     else
                         geneMap2[key]
 
-                    if (rand.nextBoolean()) {
+                    if (Seed.random.nextBoolean()) {
                         continue
                     }
 

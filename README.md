@@ -1,14 +1,38 @@
 # evo-NEAT
-A java implementation of NEAT(NeuroEvolution of Augmenting Topologies ) for the generation of evolving artificial neural networks.
+A Kotlin implementation of NEAT(NeuroEvolution of Augmenting Topologies ) for the generation of evolving artificial neural networks with Coroutines support.
 
 Implimentation of http://nn.cs.utexas.edu/downloads/papers/stanley.ec02.pdf
 
 ### Usage
-All projects should have a class which implements Environment interface and override its evaluateFitness method. The evaluateFitness method is the method to assign the fitness value to the genomes depending on the problem(Environment). 
+Add it in your root build.gradle at the end of repositories:
 
-The main function should have a Pool and the Environment instance. 
+	allprojects {
+		repositories {
+			...
+			maven { url 'https://jitpack.io' }
+		}
+	}
+Step 2. Add the dependency
 
-Every generation should call the pool.evaluateFitness(env) and pool.breedNewGeneration().
-The best fitness score of the pool can be accessed by calling pool.getTopGenome().getPoints(). This can be used as a break condition as well. 
+	dependencies {
+	        implementation 'com.github.Advice-Dog:evo-NEAT:-SNAPSHOT'
+	}
 
-An example of the XOR implementation is given in the folder evo-NEAT/src/examples/  .
+## Implementation
+You must implement the `Environment` interface and override the `evaluateFitness(population: List<Genome>)` function.
+
+For each `Genome` in the population, you want to call `Genome.evaluateNetwork(...)` with your inputs, and then calculate the fitness from the result and set it on the `Genome`.
+
+
+### Config
+You can config how the model is created using the `NEATConfig.Builder`.
+
+    val config: NeatConfig = NEATConfig.Builder()
+        .setPopulationSize(300)
+        .setBatchSize(100)
+        .setInputs(2)
+        .setOutputs(1)
+        .build()
+        
+### Example
+A full example of the XOR implementation is given in the folder evo-NEAT/src/examples/  .

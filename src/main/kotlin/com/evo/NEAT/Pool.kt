@@ -1,6 +1,10 @@
 package com.evo.NEAT
 
 import com.evo.NEAT.config.Config
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 import java.util.ArrayList
 
@@ -41,7 +45,16 @@ class Pool {
     }
 
     fun evaluateFitness(environment: Environment) {
-        environment.evaluateFitness(species.flatMap { it.genomes })
+        runBlocking {
+            species.flatMap { it.genomes }
+                .chunked(Config.BATCH_SIZE)
+                .forEach {
+                    launch {
+                        environment.evaluateFitness(it)
+                    }
+                }
+        }
+
         rankGlobally()
     }
 

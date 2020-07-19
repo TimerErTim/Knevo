@@ -6,6 +6,7 @@ object Config {
     const val OUTPUTS = 1
     const val HIDDEN_NODES = 1000000
     const val POPULATION = 300
+    const val BATCH_SIZE = 100
 
     const val COMPATIBILITY_THRESHOLD = 1f
     const val EXCESS_COEFFICENT = 2f

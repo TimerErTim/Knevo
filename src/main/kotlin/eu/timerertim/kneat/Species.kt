@@ -1,9 +1,7 @@
-package com.evo.NEAT
+package eu.timerertim.kneat
 
-import com.evo.NEAT.config.Defaults
-import com.evo.NEAT.config.Seed
-
-import java.util.ArrayList
+import eu.timerertim.kneat.config.Defaults
+import eu.timerertim.kneat.config.Seed
 
 class Species() : Comparable<Species> {
 
@@ -27,10 +25,10 @@ class Species() : Comparable<Species> {
     private val random = Seed.random
 
     val totalAdjustedFitness: Float
-        get() = genomes.sumByDouble { it.adjustedFitness.toDouble() }.toFloat()
+        get() = genomes.sumOf { it.adjustedFitness.toDouble() }.toFloat()
 
     val topGenome: Genome
-        get() = genomes.maxBy { it.fitness }!!
+        get() = genomes.maxByOrNull { it.fitness }!!
 
     constructor(top: Genome) : this() {
         genomes.add(top)

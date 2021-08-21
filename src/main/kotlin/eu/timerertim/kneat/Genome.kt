@@ -1,13 +1,12 @@
-package com.evo.NEAT
+package eu.timerertim.kneat
 
-import com.evo.NEAT.config.NEATConfig
-import com.evo.NEAT.config.Defaults
-import com.evo.NEAT.config.Seed
-
-import javax.management.RuntimeErrorException
+import eu.timerertim.kneat.config.Defaults
+import eu.timerertim.kneat.config.NEATConfig
+import eu.timerertim.kneat.config.Seed
 import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
+import javax.management.RuntimeErrorException
+import kotlin.math.exp
+import kotlin.math.tanh
 
 class Genome(private val config: NEATConfig) : Comparable<Genome>, Cloneable {
     // Global Percentile Rank (higher the better)
@@ -121,7 +120,7 @@ class Genome(private val config: NEATConfig) : Comparable<Genome>, Cloneable {
     }
 
     private fun sigmoid(x: Float): Float {
-        return (1 / (1 + Math.exp(-4.9 * x))).toFloat()
+        return (1 / (1 + exp(-4.9 * x))).toFloat()
     }
 
     // Mutations

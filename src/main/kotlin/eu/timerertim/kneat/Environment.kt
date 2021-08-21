@@ -1,4 +1,4 @@
-package com.evo.NEAT
+package eu.timerertim.kneat
 
 /**
  * assign Fitness to each genome

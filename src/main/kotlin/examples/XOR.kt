@@ -1,9 +1,10 @@
 package examples
 
-import com.evo.NEAT.Environment
-import com.evo.NEAT.Genome
-import com.evo.NEAT.Pool
-import com.evo.NEAT.config.NEATConfig
+import eu.timerertim.kneat.Environment
+import eu.timerertim.kneat.Genome
+import eu.timerertim.kneat.Pool
+import eu.timerertim.kneat.config.NEATConfig
+import kotlin.math.abs
 
 fun main() {
     val xor = XOR()
@@ -33,7 +34,22 @@ fun main() {
         generation++
     } while (topGenome.points < 15)
 
-    println(pool.topGenome.evaluateNetwork(floatArrayOf(1f, 0f))[0])
+    val gene = pool.topGenome
+    for (i in 0..1)
+        for (j in 0..1) {
+            print("$i $j - ")
+            println(gene.evaluate(floatArrayOf(i.toFloat(), j.toFloat()))[0])
+        }
+
+    var input = floatArrayOf(1F, 0F)
+    var result = gene.evaluate(input)[0]
+    println(result)
+    input = floatArrayOf(1F, 1F)
+    result = gene.evaluate(input)[0]
+    println(result)
+    input = floatArrayOf(0F, 1F)
+    result = gene.evaluate(input)[0]
+    println(result)
 }
 
 class XOR : Environment {
@@ -45,9 +61,9 @@ class XOR : Environment {
             for (i in 0..1)
                 for (j in 0..1) {
                     val inputs = floatArrayOf(i.toFloat(), j.toFloat())
-                    val output = gene.evaluateNetwork(inputs)
+                    val output = gene.evaluate(inputs)
                     val expected = i xor j
-                    fitness += 1 - Math.abs(expected - output[0])
+                    fitness += 1 - abs(expected - output[0])
                 }
             fitness *= fitness
 

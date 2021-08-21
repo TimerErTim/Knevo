@@ -1,4 +1,4 @@
-package com.evo.NEAT
+package eu.timerertim.kneat
 
 object InnovationCounter {
 

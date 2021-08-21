@@ -1,4 +1,4 @@
-package com.evo.NEAT
+package eu.timerertim.kneat
 
 /**
  * ConnectionGene Represents the connection(Axon) of the neuron
@@ -16,6 +16,5 @@ data class ConnectionGene(
         return super.clone() as ConnectionGene
     }
 
-    override fun toString() =
-        "ConnectionGene(into=$into, out=$out, innovation=$innovation, weight=$weight, isEnabled=$isEnabled)"
+    override fun toString() = "$innovation:$into->$out=$weight|$isEnabled"
 }

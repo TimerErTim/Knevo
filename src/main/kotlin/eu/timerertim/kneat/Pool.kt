@@ -1,10 +1,12 @@
-package com.evo.NEAT
+package eu.timerertim.kneat
 
-import com.evo.NEAT.config.NEATConfig
-import com.evo.NEAT.config.Defaults
-import kotlinx.coroutines.*
-
-import java.util.ArrayList
+import eu.timerertim.kneat.config.Defaults
+import eu.timerertim.kneat.config.NEATConfig
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.joinAll
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlin.random.Random
 
 class Pool(private val config: NEATConfig = NEATConfig()) {
 
@@ -14,8 +16,10 @@ class Pool(private val config: NEATConfig = NEATConfig()) {
     private val topFitness: Float = 0.toFloat()
     private var poolStaleness = 0
 
+    private val random = Random(2000)
+
     val topGenome: Genome
-        get() = species.flatMap { it.genomes }.maxBy { it.fitness }!!
+        get() = species.flatMap { it.genomes }.maxByOrNull { it.fitness }!!
 
 
     fun initializePool() {
@@ -67,7 +71,7 @@ class Pool(private val config: NEATConfig = NEATConfig()) {
     }
 
     private fun calculateGlobalAdjustedFitness(): Float {
-        return species.sumByDouble { it.totalAdjustedFitness.toDouble() }.toFloat()
+        return species.sumOf { it.totalAdjustedFitness.toDouble() }.toFloat()
     }
 
     private fun removeWeakGenomesFromSpecies() {

@@ -1,11 +1,11 @@
 package examples
 
-import com.evo.NEAT.Genome
-import com.evo.NEAT.InnovationCounter
-import com.evo.NEAT.Pool
-import com.evo.NEAT.config.Seed
-import org.junit.Assert.assertEquals
-import org.junit.Test
+import eu.timerertim.kneat.Genome
+import eu.timerertim.kneat.InnovationCounter
+import eu.timerertim.kneat.Pool
+import eu.timerertim.kneat.config.Seed
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 import kotlin.random.Random
 
 class XORTest {
@@ -57,7 +57,7 @@ class XORTest {
         } while (topGenome.points < 15)
 
         assertEquals(788, generation)
-        assertEquals(15086,InnovationCounter.innovation)
+        assertEquals(15086, InnovationCounter.innovation)
     }
 
     @Test

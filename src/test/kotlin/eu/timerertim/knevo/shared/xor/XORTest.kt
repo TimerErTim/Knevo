@@ -1,9 +1,9 @@
-package examples
+package eu.timerertim.knevo.shared.xor
 
-import eu.timerertim.kneat.Genome
-import eu.timerertim.kneat.InnovationCounter
-import eu.timerertim.kneat.Pool
-import eu.timerertim.kneat.config.Seed
+import eu.timerertim.knevo.neat.Genome
+import eu.timerertim.knevo.neat.InnovationCounter
+import eu.timerertim.knevo.neat.Pool
+import eu.timerertim.knevo.neat.config.Seed
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import kotlin.random.Random

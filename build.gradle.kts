@@ -2,7 +2,7 @@ plugins {
     kotlin("jvm") version "1.5.20"
 }
 
-group = "eu.timerertim.kneat"
+group = "eu.timerertim.knevo"
 version = "0.1-alpha"
 
 repositories {

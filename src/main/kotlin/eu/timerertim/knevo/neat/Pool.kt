@@ -1,7 +1,7 @@
-package eu.timerertim.kneat
+package eu.timerertim.knevo.neat
 
-import eu.timerertim.kneat.config.Defaults
-import eu.timerertim.kneat.config.NEATConfig
+import eu.timerertim.knevo.neat.config.Defaults
+import eu.timerertim.knevo.neat.config.NEATConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch

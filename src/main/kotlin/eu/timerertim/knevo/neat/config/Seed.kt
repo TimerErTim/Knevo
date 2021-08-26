@@ -1,4 +1,4 @@
-package eu.timerertim.kneat.config
+package eu.timerertim.knevo.neat.config
 
 import kotlin.random.Random
 

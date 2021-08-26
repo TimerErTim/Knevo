@@ -1,7 +1,7 @@
-package eu.timerertim.kneat
+package eu.timerertim.knevo.neat
 
-import eu.timerertim.kneat.config.Defaults
-import eu.timerertim.kneat.config.Seed
+import eu.timerertim.knevo.neat.config.Defaults
+import eu.timerertim.knevo.neat.config.Seed
 
 class Species() : Comparable<Species> {
 

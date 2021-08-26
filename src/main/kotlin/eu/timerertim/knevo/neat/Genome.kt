@@ -1,19 +1,22 @@
-package eu.timerertim.kneat
+package eu.timerertim.knevo.neat
 
-import eu.timerertim.kneat.config.Defaults
-import eu.timerertim.kneat.config.NEATConfig
-import eu.timerertim.kneat.config.Seed
+import eu.timerertim.knevo.activation.Sigmoid
+import eu.timerertim.knevo.neat.config.Defaults
+import eu.timerertim.knevo.neat.config.NEATConfig
+import eu.timerertim.knevo.neat.config.Seed
 import java.util.*
 import javax.management.RuntimeErrorException
-import kotlin.math.exp
-import kotlin.math.tanh
+
+private val f = Sigmoid()
 
 class Genome(private val config: NEATConfig) : Comparable<Genome>, Cloneable {
+    private var regenerate: Boolean = true
+
     // Global Percentile Rank (higher the better)
     var fitness: Float = 0.toFloat()
     var points: Float = 0.toFloat()
 
-    // DNA- MAin archive of gene information
+    // DNA- Main archive of gene information
     var connectionGeneList = ArrayList<ConnectionGene>()
 
     // Generated while performing network operation
@@ -69,13 +72,20 @@ class Genome(private val config: NEATConfig) : Comparable<Genome>, Cloneable {
         return genome
     }
 
+    fun reset() {
+        regenerate = true
+    }
+
     private fun generateNetwork() {
+        if (!regenerate) return
+
         nodes.clear()
         //  Input layer
         for (i in 0 until config.inputs) {
             nodes[i] = NodeGene(0f)                    //Inputs
         }
         nodes[config.inputs] = NodeGene(1f)        // Bias
+        nodes.values.forEach { it.isActivated = true }
 
         //output layer
         for (i in config.inputs + config.hiddenNodes until config.inputs + config.hiddenNodes + config.outputs) {
@@ -84,15 +94,17 @@ class Genome(private val config: NEATConfig) : Comparable<Genome>, Cloneable {
 
         // hidden layer
         for (con in connectionGeneList) {
-            if (!nodes.containsKey(con.into))
-                nodes[con.into] = NodeGene(0f)
-            if (!nodes.containsKey(con.out))
-                nodes[con.out] = NodeGene(0f)
-            nodes[con.out]!!.connections.add(con)
+            if (!nodes.containsKey(con.from))
+                nodes[con.from] = NodeGene(0f)
+            if (!nodes.containsKey(con.to))
+                nodes[con.to] = NodeGene(0f)
+            nodes[con.to]!!.connections.add(con)
         }
+
+        regenerate = false
     }
 
-    fun evaluateNetwork(inputs: FloatArray): FloatArray {
+    operator fun invoke(inputs: FloatArray): FloatArray {
         val output = FloatArray(config.outputs)
         generateNetwork()
 
@@ -100,28 +112,33 @@ class Genome(private val config: NEATConfig) : Comparable<Genome>, Cloneable {
             nodes[i]!!.value = inputs[i]
         }
 
-        for ((key, node) in nodes) {
-            var sum = 0f
-
-            if (key > config.inputs) {
-                for (conn in node.connections) {
-                    if (conn.isEnabled) {
-                        sum += nodes[conn.into]!!.value * conn.weight
-                    }
-                }
-                node.value = sigmoid(sum)
-            }
+        for ((id, node) in nodes.entries) {
+            if (id > config.inputs)
+                node.isActivated = false
         }
 
         for (i in 0 until config.outputs) {
-            output[i] = nodes[config.inputs + config.hiddenNodes + i]!!.value
+            output[i] = nodes[config.inputs + config.hiddenNodes + i]!!.getValue()
         }
         return output
     }
 
-    private fun sigmoid(x: Float): Float {
-        return (1 / (1 + exp(-4.9 * x))).toFloat()
+    private fun NodeGene.getValue(): Float {
+        if (isActivated) {
+            return value
+        }
+
+        isActivated = true
+        var sum = 0F
+        val enabledConnections = connections.filter { it.isEnabled }
+        for (con in enabledConnections) {
+            sum += nodes[con.from]!!.getValue() * con.weight
+        }
+        val value = if (enabledConnections.isNotEmpty()) f(sum) else sum
+        this.value = value
+        return value
     }
+
 
     // Mutations
 
@@ -158,6 +175,8 @@ class Genome(private val config: NEATConfig) : Comparable<Genome>, Cloneable {
         if (Seed.random.nextFloat() <= mutationRates[MutationKeys.ENABLE_MUTATION_CHANCE]!!) {
             enableMutate()
         }
+
+        regenerate = true
     }
 
     private fun mutateWeight() {
@@ -171,42 +190,22 @@ class Genome(private val config: NEATConfig) : Comparable<Genome>, Cloneable {
         }
     }
 
-    private fun mutateAddConnection(forceBais: Boolean) {
+    private fun mutateAddConnection(forceBias: Boolean) {
         generateNetwork()
-        var i = 0
-        var j = 0
         val random2 = Seed.random.nextInt(nodes.size - config.inputs - 1) + config.inputs + 1
         var random1 = Seed.random.nextInt(nodes.size)
-        if (forceBais)
+        if (forceBias)
             random1 = config.inputs
-        var node1 = -1
-        var node2 = -1
 
-        for (k in nodes.keys) {
-            if (random1 == i) {
-                node1 = k
-                break
-            }
-            i++
-        }
+        val node1 = nodes.keys.elementAtOrNull(random1)
+        val node2 = nodes.keys.elementAtOrNull(random2)
 
-        for (k in nodes.keys) {
-            if (random2 == j) {
-                node2 = k
-                break
-            }
-            j++
-        }
-
-        if (node1 >= node2)
-            return
-
-        for (con in nodes[node2]!!.connections) {
-            if (con.into == node1)
+        for (con in nodes[node2]?.connections ?: emptyList()) {
+            if (con.from == node1)
                 return
         }
 
-        if (node1 < 0 || node2 < 0)
+        if (node1 == null || node2 == null)
             throw RuntimeErrorException(null)          // TODO Pool.newInnovation(node1, node2)
         connectionGeneList.add(
             ConnectionGene(
@@ -216,8 +215,7 @@ class Genome(private val config: NEATConfig) : Comparable<Genome>, Cloneable {
                 4 * Seed.random.nextFloat() - 2,
                 true
             )
-        )                // Add innovation and weight
-
+        )
     }
 
     internal fun mutateAddNode() {
@@ -235,7 +233,7 @@ class Genome(private val config: NEATConfig) : Comparable<Genome>, Cloneable {
             randomCon.isEnabled = false
             connectionGeneList.add(
                 ConnectionGene(
-                    randomCon.into,
+                    randomCon.from,
                     nextNode,
                     InnovationCounter.newInnovation(),
                     1f,
@@ -245,7 +243,7 @@ class Genome(private val config: NEATConfig) : Comparable<Genome>, Cloneable {
             connectionGeneList.add(
                 ConnectionGene(
                     nextNode,
-                    randomCon.out,
+                    randomCon.to,
                     InnovationCounter.newInnovation(),
                     randomCon.weight,
                     true

@@ -1,9 +1,9 @@
-package examples
+package eu.timerertim.knevo.neat.xor
 
-import eu.timerertim.kneat.Environment
-import eu.timerertim.kneat.Genome
-import eu.timerertim.kneat.Pool
-import eu.timerertim.kneat.config.NEATConfig
+import eu.timerertim.knevo.neat.Environment
+import eu.timerertim.knevo.neat.Genome
+import eu.timerertim.knevo.neat.Pool
+import eu.timerertim.knevo.neat.config.NEATConfig
 import kotlin.math.abs
 
 fun main() {
@@ -11,7 +11,7 @@ fun main() {
 
     val config = NEATConfig.Builder()
         .setPopulationSize(300)
-        .setBatchSize(100)
+        .setBatchSize(75)
         .setInputs(2)
         .setOutputs(1)
         .build()
@@ -32,24 +32,14 @@ fun main() {
 
         pool.breedNewGeneration()
         generation++
-    } while (topGenome.points < 15)
+    } while (topGenome.points < 15.9)
 
     val gene = pool.topGenome
-    for (i in 0..1)
-        for (j in 0..1) {
+    for (i in 1 downTo 0)
+        for (j in 1 downTo 0) {
             print("$i $j - ")
-            println(gene.evaluate(floatArrayOf(i.toFloat(), j.toFloat()))[0])
+            println(gene(floatArrayOf(i.toFloat(), j.toFloat()))[0])
         }
-
-    var input = floatArrayOf(1F, 0F)
-    var result = gene.evaluate(input)[0]
-    println(result)
-    input = floatArrayOf(1F, 1F)
-    result = gene.evaluate(input)[0]
-    println(result)
-    input = floatArrayOf(0F, 1F)
-    result = gene.evaluate(input)[0]
-    println(result)
 }
 
 class XOR : Environment {
@@ -61,7 +51,7 @@ class XOR : Environment {
             for (i in 0..1)
                 for (j in 0..1) {
                     val inputs = floatArrayOf(i.toFloat(), j.toFloat())
-                    val output = gene.evaluate(inputs)
+                    val output = gene(inputs)
                     val expected = i xor j
                     fitness += 1 - abs(expected - output[0])
                 }

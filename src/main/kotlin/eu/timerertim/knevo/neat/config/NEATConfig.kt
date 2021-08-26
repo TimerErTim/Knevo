@@ -1,4 +1,4 @@
-package eu.timerertim.kneat.config
+package eu.timerertim.knevo.neat.config
 
 data class NEATConfig(
     val inputs: Int = Defaults.INPUTS,

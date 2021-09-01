@@ -73,6 +73,19 @@ class Relu : ActivationFunction {
 }
 
 /**
+ * The [Selu] [] [ActivationFunction] is hard to describe, but you can find a good explanation
+ * [here](https://mlfromscratch.com/activation-functions-explained/#selu).
+ */
+class Selu : ActivationFunction {
+    companion object {
+        private const val alpha = 1.6732632423543772848170429916717F
+        private const val lambda = 1.0507009873554804934193349852946F
+    }
+
+    override fun invoke(x: Float) = lambda * if (x > 0F) x else alpha * exp(x) - alpha
+}
+
+/**
  * The [Silu] [] [ActivationFunction] is similar to the [Relu] function but uses the [Sigmoid] function.
  * Similarly, you can set the "slope" of the Sigmoid part using the [a] value. In this function it controls
  * the amount of leakage for inputs below 0.

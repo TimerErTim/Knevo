@@ -45,13 +45,14 @@ class Step @JvmOverloads constructor(private val threshold: Float = 0F) : Activa
 }
 
 /**
- * The [Sign] [] [ActivationFunction] is a threshold function with an output of either 1 or -1.
- * The [threshold] t (defaults to 0) defines the function in the following way:
+ * The [Sign] [] [ActivationFunction] is a function which returns the sign of the input where the output is either
+ * 1, 0 or -1.
+ * Function is defined in the following way:
  *
- * y = 1 if x >= t else -1
+ * y = 1 if x > 0 else -1 if x < 0 else 0
  */
-class Sign @JvmOverloads constructor(private val threshold: Float = 0F) : ActivationFunction {
-    override fun invoke(x: Float) = if (x >= threshold) 1F else -1F
+class Sign : ActivationFunction {
+    override fun invoke(x: Float) = if (x > 0F) 1F else if (x < -0F) -1F else 0F
 }
 
 /**

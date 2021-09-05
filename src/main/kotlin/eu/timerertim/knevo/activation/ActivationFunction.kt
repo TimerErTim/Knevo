@@ -60,10 +60,8 @@ class Sign : ActivationFunction {
  * number generator can be set manually after initialization.
  */
 class Random : ActivationFunction {
-    var random = Random
-
     @Synchronized
-    override fun invoke(x: Float) = random.nextFloat() * 2 - 1
+    override fun invoke(x: Float) = Random.nextFloat() * 2 - 1
 }
 
 /**
@@ -105,4 +103,5 @@ class Linear @JvmOverloads constructor(private val gradient: Float = 1F) : Activ
 /**
  * This function returns a special [Linear] [] [ActivationFunction], which returns its input as output, called [Identity].
  */
-fun Identity() = Linear()
+fun Identity() = identity
+private val identity by lazy { Linear() }

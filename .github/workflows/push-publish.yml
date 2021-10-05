@@ -17,8 +17,6 @@ jobs:
   build:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
-    environment:
-      name: Maven Publish
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -31,8 +29,5 @@ jobs:
           java-version: 11
 
       - name: Build and publish
-        env:
-          ORG_GRADLE_PROJECT_GPG_SIGNING_KEY: ${{ secrets.ORG_GRADLE_PROJECT_GPG_SIGNING_KEY }}
-          GPG_SIGNING_KEY: ${{ secrets.ORG_GRADLE_PROJECT_GPG_SIGNING_KEY }}
-        run: ./gradlew -PMAVEN_UPLOAD_USER="${{ secrets.SONATYPE_USERNAME }}" -PMAVEN_UPLOAD_PWD="${{ secrets.SONATYPE_PASSWORD }}" -PGPG_SIGNING_PASSWORD="${{ secrets.GPG_SIGNING_PASSWORD }}" build publish
+        run: ./gradlew -PMAVEN_UPLOAD_USER="${{ secrets.SONATYPE_USERNAME }}" -PMAVEN_UPLOAD_PWD="${{ secrets.SONATYPE_PASSWORD }}" -PAES_SECRET_KEY="${{ secrets.AES_SECRET_KEY }}" -PGPG_SIGNING_PASSWORD="${{ secrets.GPG_SIGNING_PASSWORD }}" build publish
         

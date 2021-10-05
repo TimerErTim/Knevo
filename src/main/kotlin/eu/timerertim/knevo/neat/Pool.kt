@@ -1,5 +1,6 @@
 package eu.timerertim.knevo.neat
 
+import eu.timerertim.knevo.Environment
 import eu.timerertim.knevo.neat.config.Defaults
 import eu.timerertim.knevo.neat.config.NEATConfig
 import kotlinx.coroutines.Dispatchers

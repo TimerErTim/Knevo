@@ -47,13 +47,14 @@ class Pool(private val config: NEATConfig = NEATConfig()) {
         species.add(child)
     }
 
-    fun evaluateFitness(environment: Environment) {
+    fun evaluateFitness(environment: Environment<Genome>) {
         runBlocking {
             species.flatMap { it.genomes }
                 .chunked(config.batchSize)
                 .map {
                     launch(context = Dispatchers.Default) {
                         environment.evaluateFitness(it)
+                        it.forEach { it.reset() }
                     }
                 }.joinAll()
         }

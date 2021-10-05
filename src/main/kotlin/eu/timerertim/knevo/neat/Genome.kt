@@ -1,19 +1,22 @@
 package eu.timerertim.knevo.neat
 
-import eu.timerertim.knevo.activation.Sigmoid
+import eu.timerertim.knevo.activation.Tanh
 import eu.timerertim.knevo.neat.config.Defaults
 import eu.timerertim.knevo.neat.config.NEATConfig
 import eu.timerertim.knevo.neat.config.Seed
 import java.util.*
 import javax.management.RuntimeErrorException
+import kotlin.math.abs
 
-private val f = Sigmoid()
+private val f = Tanh()
 
-class Genome(private val config: NEATConfig) : Comparable<Genome>, Cloneable {
-    private var regenerate: Boolean = true
+typealias NEATGenome = Genome
+
+class Genome(private val config: NEATConfig) : eu.timerertim.knevo.Genome, Cloneable {
+    override var doReset: Boolean = true
 
     // Global Percentile Rank (higher the better)
-    var fitness: Float = 0.toFloat()
+    override var fitness: Float = 0.toFloat()
     var points: Float = 0.toFloat()
 
     // DNA- Main archive of gene information
@@ -73,11 +76,11 @@ class Genome(private val config: NEATConfig) : Comparable<Genome>, Cloneable {
     }
 
     fun reset() {
-        regenerate = true
+        doReset = true
     }
 
     private fun generateNetwork() {
-        if (!regenerate) return
+        if (!doReset) return
 
         nodes.clear()
         //  Input layer
@@ -101,10 +104,10 @@ class Genome(private val config: NEATConfig) : Comparable<Genome>, Cloneable {
             nodes[con.to]!!.connections.add(con)
         }
 
-        regenerate = false
+        doReset = false
     }
 
-    operator fun invoke(inputs: FloatArray): FloatArray {
+    override operator fun invoke(inputs: FloatArray): FloatArray {
         val output = FloatArray(config.outputs)
         generateNetwork()
 
@@ -176,7 +179,7 @@ class Genome(private val config: NEATConfig) : Comparable<Genome>, Cloneable {
             enableMutate()
         }
 
-        regenerate = true
+        doReset = true
     }
 
     private fun mutateWeight() {
@@ -207,11 +210,13 @@ class Genome(private val config: NEATConfig) : Comparable<Genome>, Cloneable {
 
         if (node1 == null || node2 == null)
             throw RuntimeErrorException(null)          // TODO Pool.newInnovation(node1, node2)
+
+        if (node1 >= node2) return
+
         connectionGeneList.add(
             ConnectionGene(
                 node1,
                 node2,
-                InnovationCounter.newInnovation(),
                 4 * Seed.random.nextFloat() - 2,
                 true
             )
@@ -235,7 +240,6 @@ class Genome(private val config: NEATConfig) : Comparable<Genome>, Cloneable {
                 ConnectionGene(
                     randomCon.from,
                     nextNode,
-                    InnovationCounter.newInnovation(),
                     1f,
                     true
                 )
@@ -244,7 +248,6 @@ class Genome(private val config: NEATConfig) : Comparable<Genome>, Cloneable {
                 ConnectionGene(
                     nextNode,
                     randomCon.to,
-                    InnovationCounter.newInnovation(),
                     randomCon.weight,
                     true
                 )
@@ -264,10 +267,6 @@ class Genome(private val config: NEATConfig) : Comparable<Genome>, Cloneable {
             val gene = connectionGeneList.random(Seed.random)
             gene.isEnabled = true
         }
-    }
-
-    override operator fun compareTo(other: Genome): Int {
-        return fitness.compareTo(other.fitness)
     }
 
     override fun toString(): String {
@@ -294,8 +293,8 @@ class Genome(private val config: NEATConfig) : Comparable<Genome>, Cloneable {
             }
 
             val child = Genome(parent1.config)
-            val geneMap1 = TreeMap<Int, ConnectionGene>()
-            val geneMap2 = TreeMap<Int, ConnectionGene>()
+            val geneMap1 = TreeMap<Long, ConnectionGene>()
+            val geneMap2 = TreeMap<Long, ConnectionGene>()
 
             for (con in parent1.connectionGeneList) {
                 geneMap1[con.innovation] = con
@@ -350,14 +349,12 @@ class Genome(private val config: NEATConfig) : Comparable<Genome>, Cloneable {
 
 
         fun isSameSpecies(g1: Genome, g2: Genome): Boolean {
-            val geneMap1 = TreeMap<Int, ConnectionGene>()
-            val geneMap2 = TreeMap<Int, ConnectionGene>()
+            val geneMap1 = TreeMap<Long, ConnectionGene>()
+            val geneMap2 = TreeMap<Long, ConnectionGene>()
 
             var matching = 0
             var disjoint = 0
-            var excess = 0
             var weight = 0f
-            val lowMaxInnovation: Int
             var delta = 0f
 
             for (con in g1.connectionGeneList) {
@@ -367,10 +364,6 @@ class Genome(private val config: NEATConfig) : Comparable<Genome>, Cloneable {
             for (con in g2.connectionGeneList) {
                 geneMap2[con.innovation] = con
             }
-            if (geneMap1.isEmpty() || geneMap2.isEmpty())
-                lowMaxInnovation = 0
-            else
-                lowMaxInnovation = Math.min(geneMap1.lastKey(), geneMap2.lastKey())
 
             val innovationP1 = geneMap1.keys
             val innovationP2 = geneMap2.keys
@@ -382,24 +375,20 @@ class Genome(private val config: NEATConfig) : Comparable<Genome>, Cloneable {
 
                 if (geneMap1.containsKey(key) && geneMap2.containsKey(key)) {
                     matching++
-                    weight += Math.abs(geneMap1[key]!!.weight - geneMap2[key]!!.weight)
+                    weight += abs(geneMap1[key]!!.weight - geneMap2[key]!!.weight)
                 } else {
-                    if (key < lowMaxInnovation) {
-                        disjoint++
-                    } else {
-                        excess++
-                    }
+                    disjoint++
                 }
 
             }
 
             //System.out.println("matching : "+matching + "\ndisjoint : "+ disjoint + "\nExcess : "+ excess +"\nWeight : "+ weight);
 
-            val N = matching + disjoint + excess
+            val N = matching + disjoint
 
             if (N > 0)
                 delta =
-                    (Defaults.EXCESS_COEFFICENT * excess + Defaults.DISJOINT_COEFFICENT * disjoint) / N + Defaults.WEIGHT_COEFFICENT * weight / matching
+                    (Defaults.DISJOINT_COEFFICENT * disjoint) / N + Defaults.WEIGHT_COEFFICENT * weight / matching
 
             return delta < Defaults.COMPATIBILITY_THRESHOLD
 

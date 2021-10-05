@@ -20,8 +20,8 @@ object Defaults {
     const val WEIGHT_CHANCE = 0.3f
     const val WEIGHT_MUTATION_CHANCE = 0.9f
     const val NODE_MUTATION_CHANCE = 0.03f
-    const val CONNECTION_MUTATION_CHANCE = 0.15f
-    const val BIAS_CONNECTION_MUTATION_CHANCE = 0.25f
+    const val CONNECTION_MUTATION_CHANCE = 0.05f
+    const val BIAS_CONNECTION_MUTATION_CHANCE = 0.15f
     const val DISABLE_MUTATION_CHANCE = 0.1f
     const val ENABLE_MUTATION_CHANCE = 0.2f
     const val CROSSOVER_CHANCE = 0.75f

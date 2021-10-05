@@ -34,4 +34,4 @@ jobs:
         env:
           ORG_GRADLE_PROJECT_GPG_SIGNING_KEY: ${{ secrets.ORG_GRADLE_PROJECT_GPG_SIGNING_KEY }}
           GPG_SIGNING_KEY: ${{ secrets.ORG_GRADLE_PROJECT_GPG_SIGNING_KEY }}
-        run: ./gradlew -PMAVEN_UPLOAD_USER="${{ secrets.SONATYPE_USERNAME }}" -PMAVEN_UPLOAD_PWD="${{ secrets.SONATYPE_PASSWORD }}" -PGPG_SIGNING_PASSWORD="${{ secrets.GPG_SIGNING_PASSWORD }}" build publish
+        run: ./gradlew -PMAVEN_UPLOAD_USER="${{ secrets.SONATYPE_USERNAME }}" -PMAVEN_UPLOAD_PWD="${{ secrets.SONATYPE_PASSWORD }}" -PGPG_SIGNING_PASSWORD="${{ secrets.GPG_SIGNING_PASSWORD }}" build publish --info

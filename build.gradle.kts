@@ -1,9 +1,15 @@
 plugins {
-    kotlin("jvm") version "1.5.20"
+    `java-library`
+
+    kotlin("jvm") version "1.5.30"
+    id("org.jetbrains.dokka") version "1.5.30"
+
+    `maven-publish`
+    signing
 }
 
 group = "eu.timerertim.knevo"
-version = "0.1-alpha"
+version = "0.1.0-alpha"
 
 repositories {
     mavenCentral()
@@ -11,10 +17,11 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib"))
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1")
+    implementation(kotlin("reflect"))
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.1")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.2")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.7.2")
 }
 
 tasks.test {
@@ -23,4 +30,78 @@ tasks.test {
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     kotlinOptions.jvmTarget = "11"
+}
+
+
+tasks {
+    val sourcesJar by registering(Jar::class) {
+        dependsOn(JavaPlugin.CLASSES_TASK_NAME)
+        archiveClassifier.set("sources")
+        from(sourceSets["main"].allSource)
+    }
+
+    val javadocJar by registering(Jar::class) {
+        dependsOn("dokkaJavadoc")
+        archiveClassifier.set("javadoc")
+        from(javadoc)
+    }
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "Maven Central"
+            val releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2"
+            val snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots"
+            url = uri(if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl)
+            credentials {
+                val MAVEN_UPLOAD_USER: String by project
+                val MAVEN_UPLOAD_PWD: String by project
+                username = MAVEN_UPLOAD_USER
+                password = MAVEN_UPLOAD_PWD
+            }
+        }
+    }
+    publications {
+        create<MavenPublication>("core") {
+            artifact(tasks["jar"])
+            artifact(tasks["sourcesJar"])
+            artifact(tasks["javadocJar"])
+
+            pom {
+                name.set("Knevo")
+                description.set(
+                    "Kotlin (and Java) Neuroevolution library featuring multiple algorithms, coroutines " +
+                            "and serialization"
+                )
+                url.set("knevo.timerertim.eu")
+                licenses {
+                    license {
+                        name.set("MIT License")
+                        url.set("https://raw.githubusercontent.com/TimerErTim/Knevo/master/LICENSE")
+                    }
+                }
+                developers {
+                    developer {
+                        id.set("timerertim")
+                        name.set("Tim Peko")
+                        email.set("timerertim@gmail.com")
+                    }
+                }
+                scm {
+                    connection.set("scm:git:https://github.com/TimerErTim/Knevo.git")
+                    developerConnection.set("scm:git:https://github.com/TimerErTim/Knevo.git")
+                    url.set("https://github.com/TimerErTim/Knevo")
+                }
+
+            }
+        }
+    }
+}
+
+signing {
+    val GPG_SIGNING_KEY: String? by project
+    val GPG_SIGNING_PASSWORD: String? by project
+    useInMemoryPgpKeys(GPG_SIGNING_KEY, GPG_SIGNING_PASSWORD)
+    sign(publishing.publications["core"])
 }

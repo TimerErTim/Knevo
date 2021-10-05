@@ -50,7 +50,7 @@ tasks {
 publishing {
     repositories {
         maven {
-            name = "Maven Central"
+            name = "MavenCentral"
             val releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2"
             val snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots"
             url = uri(if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl)
@@ -93,7 +93,6 @@ publishing {
                     developerConnection.set("scm:git:https://github.com/TimerErTim/Knevo.git")
                     url.set("https://github.com/TimerErTim/Knevo")
                 }
-
             }
         }
     }

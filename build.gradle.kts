@@ -55,8 +55,8 @@ publishing {
             val snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots"
             url = uri(if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl)
             credentials {
-                val MAVEN_UPLOAD_USER: String by project
-                val MAVEN_UPLOAD_PWD: String by project
+                val MAVEN_UPLOAD_USER: String? by project
+                val MAVEN_UPLOAD_PWD: String? by project
                 username = MAVEN_UPLOAD_USER
                 password = MAVEN_UPLOAD_PWD
             }

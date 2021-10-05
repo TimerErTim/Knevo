@@ -1,5 +1,6 @@
 package eu.timerertim.knevo.activation
 
+import java.io.Serializable
 import kotlin.math.exp
 import kotlin.math.sin
 import kotlin.random.Random
@@ -8,30 +9,42 @@ import kotlin.random.Random
  * An [ActivationFunction] is a function which takes a [Float] value and returns another Float depending on said input.
  * This can be literally any function, ranging from linear function to sinus function.
  */
-typealias ActivationFunction = (Float) -> Float
+interface ActivationFunction : (Float) -> Float, Serializable
 
 /**
  * The [Sigmoid] [] [ActivationFunction] can be viewed [here](https://www.geogebra.org/m/QvSuH67g).
  * The [slope] (similar to "a" on linked webpage) can manually be specified to fit different needs.
  */
-class Sigmoid @JvmOverloads constructor(private val slope: Float = 4.9F) : ActivationFunction {
+data class Sigmoid @JvmOverloads constructor(private val slope: Float = 4.9F) : ActivationFunction {
     override fun invoke(x: Float) = (1 / (1 + exp(-slope * x)))
+
+    companion object {
+        private const val serialVersionUID = 0L
+    }
 }
 
 /**
  * The [Tanh] [] [ActivationFunction] is similar to the [Sigmoid] function, but its output range is (-1, 1) in contrast
  * to Sigmoid's (0, 1) range. The [slope] can be specified when a non-default value is needed.
  */
-class Tanh @JvmOverloads constructor(private val slope: Float = 2F) : ActivationFunction {
+data class Tanh @JvmOverloads constructor(private val slope: Float = 2F) : ActivationFunction {
     override fun invoke(x: Float) = (2 / (1 + exp(-slope * x))) - 1
+
+    companion object {
+        private const val serialVersionUID = 0L
+    }
 }
 
 /**
  * The [Sinus] [] [ActivationFunction] should be self-explanatory. Its output range is `[-1, 1]`.
  * The [compression] can be specified. It should be noted, that values < 1 result in a stretch instead.
  */
-class Sinus @JvmOverloads constructor(private val compression: Float = 1F) : ActivationFunction {
+data class Sinus @JvmOverloads constructor(private val compression: Float = 1F) : ActivationFunction {
     override fun invoke(x: Float) = sin(compression * x)
+
+    companion object {
+        private const val serialVersionUID = 0L
+    }
 }
 
 /**
@@ -40,8 +53,12 @@ class Sinus @JvmOverloads constructor(private val compression: Float = 1F) : Act
  *
  * y = 1 if x >= t else 0
  */
-class Step @JvmOverloads constructor(private val threshold: Float = 0F) : ActivationFunction {
+data class Step @JvmOverloads constructor(private val threshold: Float = 0F) : ActivationFunction {
     override fun invoke(x: Float) = if (x >= threshold) 1F else 0F
+
+    companion object {
+        private const val serialVersionUID = 0L
+    }
 }
 
 /**
@@ -53,6 +70,20 @@ class Step @JvmOverloads constructor(private val threshold: Float = 0F) : Activa
  */
 class Sign : ActivationFunction {
     override fun invoke(x: Float) = if (x > 0F) 1F else if (x < -0F) -1F else 0F
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return javaClass.hashCode()
+    }
+
+    companion object {
+        private const val serialVersionUID = 0L
+    }
 }
 
 /**
@@ -62,6 +93,20 @@ class Sign : ActivationFunction {
 class Random : ActivationFunction {
     @Synchronized
     override fun invoke(x: Float) = Random.nextFloat() * 2 - 1
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return javaClass.hashCode()
+    }
+
+    companion object {
+        private const val serialVersionUID = 0L
+    }
 }
 
 /**
@@ -69,6 +114,20 @@ class Random : ActivationFunction {
  */
 class Relu : ActivationFunction {
     override fun invoke(x: Float) = if (x > 0F) x else 0F
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return javaClass.hashCode()
+    }
+
+    companion object {
+        private const val serialVersionUID = 0L
+    }
 }
 
 /**
@@ -79,9 +138,20 @@ class Selu : ActivationFunction {
     companion object {
         private const val alpha = 1.6732632423543772848170429916717F
         private const val lambda = 1.0507009873554804934193349852946F
+        private const val serialVersionUID = 0L
     }
 
     override fun invoke(x: Float) = lambda * if (x > 0F) x else alpha * exp(x) - alpha
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return javaClass.hashCode()
+    }
 }
 
 /**
@@ -89,15 +159,23 @@ class Selu : ActivationFunction {
  * Similarly, you can set the "slope" of the Sigmoid part using the [a] value. In this function it controls
  * the amount of leakage for inputs below 0.
  */
-class Silu @JvmOverloads constructor(private val a: Float = 1F) : ActivationFunction {
+data class Silu @JvmOverloads constructor(private val a: Float = 1F) : ActivationFunction {
     override fun invoke(x: Float) = (x / (1 + exp(-a * x)))
+
+    companion object {
+        private const val serialVersionUID = 0L
+    }
 }
 
 /**
  * The [Linear] [] [ActivationFunction] multiplies the input with the [gradient] (defaults to 1).
  */
-class Linear @JvmOverloads constructor(private val gradient: Float = 1F) : ActivationFunction {
+data class Linear @JvmOverloads constructor(private val gradient: Float = 1F) : ActivationFunction {
     override fun invoke(x: Float) = gradient * x
+
+    companion object {
+        private const val serialVersionUID = 0L
+    }
 }
 
 /**

@@ -44,6 +44,10 @@ jobs:
       with:
         args: --build-upon-default-config --config .github/detekt.yml --report sarif:${{ github.workspace }}/detekt.sarif.json
 
+    - name: Print Structure
+      if: always()
+      run: ls -aR | grep ":$" | perl -pe 's/:$//;s/[^-][^\/]*\//    /g;s/^    (\S)/└── \1/;s/(^    |    (?= ))/│   /g;s/    (\S)/└── \1/'
+
     # Uploads results to GitHub repository using the upload-sarif action
     - name: Upload report to Github
       if: always()

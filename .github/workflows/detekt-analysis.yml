@@ -40,7 +40,7 @@ jobs:
 
     # Performs static analysis using Detekt and safes report
     - name: Run Detekt
-      uses: natiginfo/action-detekt-all@1.18.1
+    - uses: natiginfo/action-detekt-all@1.18.1
       with:
         args: --build-upon-default-config --config detekt.yml --report sarif:${{ github.workspace }}/detekt.sarif.json --base-path ${{ github.workspace }}
 

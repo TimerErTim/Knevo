@@ -46,7 +46,7 @@ jobs:
 
     - name: Print Structure
       if: always()
-      run: ls -aR | grep ":$" | perl -pe 's/:$//;s/[^-][^\/]*\//    /g;s/^    (\S)/└── \1/;s/(^    |    (?= ))/│   /g;s/    (\S)/└── \1/'
+      run: ls -R | grep ":$" | sed -e 's/:$//' -e 's/[^-][^\/]*\//──/g' -e 's/─/├/' -e '$s/├/└/'
 
     # Uploads results to GitHub repository using the upload-sarif action
     - name: Upload report to Github

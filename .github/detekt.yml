@@ -20,12 +20,24 @@ comments:
   UndocumentedPublicProperty:
     active: true
 
+coroutines:
+  GlobalCoroutineUsage:
+    active: true
+  RedundantSuspendModifier:
+    active: true
+  SleepInsteadOfDelay:
+    active: true
+  SuspendFunWithFlowReturnType:
+    active: true
+  
+
 build:
   maxIssues: 10
   weights:
     comments: 4
     DeprecatedBlockTag: 2
     EndOfSentenceFormat: 1
+
 
 console-reports:
   active: true
@@ -36,7 +48,6 @@ console-reports:
     #  - 'FindingsReport'
     - 'FileBasedFindingsReport'
     #  - 'LiteFindingsReport'
-
 
 processors:
     active: true

@@ -5,7 +5,7 @@ naming:
   active: false
 
 build:
-  max-issues: 10
+  maxIssues: 10
 
 console-reports:
   active: true

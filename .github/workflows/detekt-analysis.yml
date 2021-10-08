@@ -42,7 +42,7 @@ jobs:
     - name: Run Detekt
       uses: natiginfo/action-detekt-all@1.18.1
       with:
-        args: --build-upon-default-config --config detekt.yml --report sarif:${{ github.workspace }}/detekt.sarif.json --base-path ${{ github.workspace }}
+        args: --build-upon-default-config --config ./github/detekt.yml --report sarif:${{ github.workspace }}/detekt.sarif.json --base-path ${{ github.workspace }}
 
     # Uploads results to GitHub repository using the upload-sarif action
     - name: Upload report to Github

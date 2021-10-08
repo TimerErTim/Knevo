@@ -1,0 +1,36 @@
+complexity:
+  active: false
+
+naming:
+  active: false
+
+build:
+  max-issues: 10
+
+console-reports:
+  active: true
+  exclude:
+    #  - 'ProjectStatisticsReport'
+    #  - 'ComplexityReport'
+    #  - 'NotificationReport'
+    #  - 'FindingsReport'
+    - 'FileBasedFindingsReport'
+    #  - 'LiteFindingsReport'
+
+
+processors:
+    active: true
+    exclude:
+      # - 'DetektProgressListener'
+      - 'KtFileCountProcessor'
+      - 'PackageCountProcessor'
+      - 'ClassCountProcessor'
+      - 'FunctionCountProcessor'
+      - 'PropertyCountProcessor'
+      # - 'ProjectComplexityProcessor'
+      # - 'ProjectCognitiveComplexityProcessor'
+      - 'ProjectLLOCProcessor'
+      - 'ProjectCLOCProcessor'
+      - 'ProjectLOCProcessor'
+      - 'ProjectSLOCProcessor'
+      - 'LicenseHeaderLoaderExtension'

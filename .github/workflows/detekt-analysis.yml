@@ -2,20 +2,15 @@
 # Detekt.
 #
 # Scans are triggered:
-# 1. On every push to default and protected branches
-# 2. On every Pull Request targeting the default branch
-# 3. On a weekly schedule
-# 4. Manually, on demand, via the "workflow_dispatch" event
+# 1. On every Pull Request targeting the default branch
+# 2. On a weekly schedule
+# 3. Manually, on demand, via the "workflow_dispatch" event
+# 4. From another workflow via the "workflow_call" event
 #
-# The workflow should work with no modifications, but you might like to use a
-# later version of the Detekt CLI by modifing the $DETEKT_RELEASE_TAG
-# environment variable.
 name: Scan with Detekt
 
 on:
-  # Triggers the workflow on push or pull request events but only for default and protected branches
-  push:
-    branches: [ master ]
+  # Triggers the workflow on pull request events but only for default and protected branches
   pull_request:
     branches: [ master ]
   schedule:
@@ -23,6 +18,9 @@ on:
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+  
+  # Allows you to run this workflow from another workflow
+  workflow_call:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -38,10 +36,6 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
-    - name: Print Structure
-      if: always()
-      run: find . | sed -e "s/[^-][^\/]*\// |/g" -e "s/|\([^ ]\)/|-\1/"
-
       # Setup Detekt for usage
     - name: Setup Detekt
       uses: peter-murray/setup-detekt@v1
@@ -51,10 +45,6 @@ jobs:
     # Performs static analysis using Detekt and safes report
     - name: Run Detekt
       run: detekt-cli --build-upon-default-config --config .github/detekt.yml --report sarif:${{ github.workspace }}/detekt.sarif.json
-
-    - name: Print Structure
-      if: always()
-      run: find . | sed -e "s/[^-][^\/]*\// |/g" -e "s/|\([^ ]\)/|-\1/"
       
     # Uploads results to GitHub repository using the upload-sarif action
     - name: Upload report to Github

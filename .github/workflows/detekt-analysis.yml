@@ -42,11 +42,13 @@ jobs:
       if: always()
       run: find . | sed -e "s/[^-][^\/]*\// |/g" -e "s/|\([^ ]\)/|-\1/"
 
+      # Setup Detekt for usage
+    - name: Setup Detekt
+      uses: peter-murray/setup-detekt@v1
+
     # Performs static analysis using Detekt and safes report
     - name: Run Detekt
-      uses: natiginfo/action-detekt-all@1.18.1
-      with:
-        args: --build-upon-default-config --config .github/detekt.yml --report sarif:${{ github.workspace }}/detekt.sarif.json
+      run: detekt-cli --build-upon-default-config --config .github/detekt.yml --report sarif:${{ github.workspace }}/detekt.sarif.json
 
     - name: Print Structure
       if: always()

@@ -50,7 +50,7 @@ jobs:
 
     # Performs static analysis using Detekt and safes report
     - name: Run Detekt
-      run: detekt --build-upon-default-config --config .github/detekt.yml --report sarif:${{ github.workspace }}/detekt.sarif.json
+      run: detekt-cli --build-upon-default-config --config .github/detekt.yml --report sarif:${{ github.workspace }}/detekt.sarif.json
 
     - name: Print Structure
       if: always()

@@ -1,30 +1,30 @@
 package eu.timerertim.knevo.neat.config
 
-object Defaults {
+typealias Defaults = NEATDefaults
 
-    internal const val INPUTS = 2
-    internal const val OUTPUTS = 1
-    internal const val HIDDEN_NODES = 1000000
-    internal const val POPULATION = 300
-    internal const val BATCH_SIZE = 100
+object NEATDefaults {
 
-    const val COMPATIBILITY_THRESHOLD = 1f
-    const val EXCESS_COEFFICENT = 2f
-    const val DISJOINT_COEFFICENT = 2f
-    const val WEIGHT_COEFFICENT = 0.4f
+    const val INPUTS = 2
+    const val OUTPUTS = 1
+    const val POPULATION = 300
+    const val BATCH_SIZE = 100
 
-    const val STALE_SPECIES = 15f
+    const val COMPATIBILITY_THRESHOLD = 1F
+    const val DISJOINT_COEFFICENT = 2F
+    const val WEIGHT_COEFFICENT = 0.4F
 
-    const val STEPS = 0.1f
-    const val PERTURB_CHANCE = 0.9f
-    const val WEIGHT_CHANCE = 0.3f
-    const val WEIGHT_MUTATION_CHANCE = 0.9f
-    const val NODE_MUTATION_CHANCE = 0.03f
-    const val CONNECTION_MUTATION_CHANCE = 0.05f
-    const val BIAS_CONNECTION_MUTATION_CHANCE = 0.15f
-    const val DISABLE_MUTATION_CHANCE = 0.1f
-    const val ENABLE_MUTATION_CHANCE = 0.2f
-    const val CROSSOVER_CHANCE = 0.75f
+    const val STALE_SPECIES = 15F
+
+    const val STEPS = 0.1F
+    const val PERTURB_CHANCE = 0.9F
+    const val WEIGHT_CHANCE = 0.3F
+    const val WEIGHT_MUTATION_CHANCE = 0.9F
+    const val NODE_MUTATION_CHANCE = 0.03F
+    const val CONNECTION_MUTATION_CHANCE = 0.05F
+    const val BIAS_CONNECTION_MUTATION_CHANCE = 0.15F
+    const val DISABLE_MUTATION_CHANCE = 0.1F
+    const val ENABLE_MUTATION_CHANCE = 0.2F
+    const val CROSSOVER_CHANCE = 0.75F
 
     const val STALE_POOL = 20
 }

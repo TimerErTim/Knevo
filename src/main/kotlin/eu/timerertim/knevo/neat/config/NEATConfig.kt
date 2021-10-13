@@ -1,20 +1,18 @@
 package eu.timerertim.knevo.neat.config
 
 data class NEATConfig(
-    val inputs: Int = Defaults.INPUTS,
-    val outputs: Int = Defaults.OUTPUTS,
-    val hiddenNodes: Int = Defaults.HIDDEN_NODES,
-    val population: Int = Defaults.POPULATION,
-    val batchSize: Int = Defaults.BATCH_SIZE
+    val inputs: Int = NEATDefaults.INPUTS,
+    val outputs: Int = NEATDefaults.OUTPUTS,
+    val population: Int = NEATDefaults.POPULATION,
+    val batchSize: Int = NEATDefaults.BATCH_SIZE
 ) {
 
     class Builder {
 
-        private var inputs: Int = Defaults.INPUTS
-        private var outputs: Int = Defaults.OUTPUTS
-        private var hiddenNodes: Int = Defaults.HIDDEN_NODES
-        private var population: Int = Defaults.POPULATION
-        private var batchSize: Int = Defaults.BATCH_SIZE
+        private var inputs: Int = NEATDefaults.INPUTS
+        private var outputs: Int = NEATDefaults.OUTPUTS
+        private var population: Int = NEATDefaults.POPULATION
+        private var batchSize: Int = NEATDefaults.BATCH_SIZE
 
         fun setInputs(inputs: Int): Builder {
             this.inputs = inputs
@@ -23,11 +21,6 @@ data class NEATConfig(
 
         fun setOutputs(outputs: Int): Builder {
             this.outputs = outputs
-            return this
-        }
-
-        fun setHiddenNodes(hiddenNodes: Int): Builder {
-            this.hiddenNodes = hiddenNodes
             return this
         }
 
@@ -42,7 +35,7 @@ data class NEATConfig(
         }
 
         fun build(): NEATConfig {
-            return NEATConfig(inputs, outputs, hiddenNodes, population, batchSize)
+            return NEATConfig(inputs, outputs, population, batchSize)
         }
     }
 }

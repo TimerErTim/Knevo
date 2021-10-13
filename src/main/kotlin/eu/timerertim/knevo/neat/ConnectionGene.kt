@@ -1,3 +1,6 @@
+@file:JvmName("NEAT")
+@file:JvmMultifileClass
+
 package eu.timerertim.knevo.neat
 
 /**

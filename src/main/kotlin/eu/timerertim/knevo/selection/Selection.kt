@@ -1,3 +1,5 @@
+@file:JvmName("Selection")
+
 package eu.timerertim.knevo.selection
 
 import eu.timerertim.knevo.Genome

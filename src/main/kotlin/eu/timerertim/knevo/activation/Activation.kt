@@ -1,3 +1,5 @@
+@file:JvmName("Activation")
+
 package eu.timerertim.knevo.activation
 
 import java.io.Serializable

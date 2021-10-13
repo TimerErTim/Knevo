@@ -1,3 +1,6 @@
+@file:JvmName("Instinct")
+@file:JvmMultifileClass
+
 package eu.timerertim.knevo.instinct
 
 import eu.timerertim.knevo.Genome
@@ -9,15 +12,15 @@ import kotlin.math.sqrt
 import kotlin.random.Random
 import kotlin.reflect.jvm.jvmName
 
-typealias InstinctNetwork = Network
-typealias InstinctConnection = Network.Connection
-typealias InstinctNode = Network.AbstractNode
+typealias Network = InstinctNetwork
+typealias InstinctConnection = InstinctNetwork.Connection
+typealias InstinctNode = InstinctNetwork.AbstractNode
 
 fun InstinctInstance.Network() = InstinctNetwork(this)
 
-class Network @JvmOverloads constructor(val instance: InstinctInstance = DefaultInstinctInstance) :
+class InstinctNetwork @JvmOverloads constructor(val instance: InstinctInstance = globalInstinctInstance) :
     Genome {
-    constructor(base: Network) : this(base.instance) {
+    constructor(base: InstinctNetwork) : this(base.instance) {
         nodes.clear()
         base.nodes.sortedBy {
             when (it) {

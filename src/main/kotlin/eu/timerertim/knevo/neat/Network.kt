@@ -1,18 +1,21 @@
+@file:JvmName("NEAT")
+@file:JvmMultifileClass
+
 package eu.timerertim.knevo.neat
 
 import eu.timerertim.knevo.activation.Tanh
-import eu.timerertim.knevo.neat.config.Defaults
 import eu.timerertim.knevo.neat.config.NEATConfig
-import eu.timerertim.knevo.neat.config.Seed
+import eu.timerertim.knevo.neat.config.NEATDefaults
 import java.util.*
 import javax.management.RuntimeErrorException
 import kotlin.math.abs
+import kotlin.random.Random
 
 private val f = Tanh()
 
-typealias NEATGenome = Genome
+typealias Network = NEATNetwork
 
-class Genome(private val config: NEATConfig) : eu.timerertim.knevo.Genome, Cloneable {
+class NEATNetwork(private val config: NEATConfig) : eu.timerertim.knevo.Genome, Cloneable {
     override var doReset: Boolean = true
 
     // Global Percentile Rank (higher the better)
@@ -24,7 +27,7 @@ class Genome(private val config: NEATConfig) : eu.timerertim.knevo.Genome, Clone
 
     // Generated while performing network operation
     private val nodes =
-        TreeMap<Int, NodeGene>()
+        TreeMap<Int, NEATNode>()
 
     // For number of child to breed in species
     var adjustedFitness: Float = 0f
@@ -44,20 +47,20 @@ class Genome(private val config: NEATConfig) : eu.timerertim.knevo.Genome, Clone
     }
 
     init {
-        mutationRates[MutationKeys.STEPS] = Defaults.STEPS
-        mutationRates[MutationKeys.PERTURB_CHANCE] = Defaults.PERTURB_CHANCE
-        mutationRates[MutationKeys.WEIGHT_CHANCE] = Defaults.WEIGHT_CHANCE
-        mutationRates[MutationKeys.WEIGHT_MUTATION_CHANCE] = Defaults.WEIGHT_MUTATION_CHANCE
-        mutationRates[MutationKeys.NODE_MUTATION_CHANCE] = Defaults.NODE_MUTATION_CHANCE
-        mutationRates[MutationKeys.CONNECTION_MUTATION_CHANCE] = Defaults.CONNECTION_MUTATION_CHANCE
-        mutationRates[MutationKeys.BIAS_CONNECTION_MUTATION_CHANCE] = Defaults.BIAS_CONNECTION_MUTATION_CHANCE
-        mutationRates[MutationKeys.DISABLE_MUTATION_CHANCE] = Defaults.DISABLE_MUTATION_CHANCE
-        mutationRates[MutationKeys.ENABLE_MUTATION_CHANCE] = Defaults.ENABLE_MUTATION_CHANCE
+        mutationRates[MutationKeys.STEPS] = NEATDefaults.STEPS
+        mutationRates[MutationKeys.PERTURB_CHANCE] = NEATDefaults.PERTURB_CHANCE
+        mutationRates[MutationKeys.WEIGHT_CHANCE] = NEATDefaults.WEIGHT_CHANCE
+        mutationRates[MutationKeys.WEIGHT_MUTATION_CHANCE] = NEATDefaults.WEIGHT_MUTATION_CHANCE
+        mutationRates[MutationKeys.NODE_MUTATION_CHANCE] = NEATDefaults.NODE_MUTATION_CHANCE
+        mutationRates[MutationKeys.CONNECTION_MUTATION_CHANCE] = NEATDefaults.CONNECTION_MUTATION_CHANCE
+        mutationRates[MutationKeys.BIAS_CONNECTION_MUTATION_CHANCE] = NEATDefaults.BIAS_CONNECTION_MUTATION_CHANCE
+        mutationRates[MutationKeys.DISABLE_MUTATION_CHANCE] = NEATDefaults.DISABLE_MUTATION_CHANCE
+        mutationRates[MutationKeys.ENABLE_MUTATION_CHANCE] = NEATDefaults.ENABLE_MUTATION_CHANCE
     }
 
     // todo: improve
-    public override fun clone(): Genome {
-        val genome = Genome(config)
+    public override fun clone(): NEATNetwork {
+        val genome = NEATNetwork(config)
 
         for (c in connectionGeneList) {
             genome.connectionGeneList.add(c.clone())
@@ -85,22 +88,22 @@ class Genome(private val config: NEATConfig) : eu.timerertim.knevo.Genome, Clone
         nodes.clear()
         //  Input layer
         for (i in 0 until config.inputs) {
-            nodes[i] = NodeGene(0f)                    //Inputs
+            nodes[i] = NEATNode(0f)                    //Inputs
         }
-        nodes[config.inputs] = NodeGene(1f)        // Bias
+        nodes[config.inputs] = NEATNode(1f)        // Bias
         nodes.values.forEach { it.isActivated = true }
 
         //output layer
-        for (i in config.inputs + config.hiddenNodes until config.inputs + config.hiddenNodes + config.outputs) {
-            nodes[i] = NodeGene(0f)
+        for (i in config.inputs until config.inputs + config.outputs) {
+            nodes[i] = NEATNode(0f)
         }
 
         // hidden layer
         for (con in connectionGeneList) {
             if (!nodes.containsKey(con.from))
-                nodes[con.from] = NodeGene(0f)
+                nodes[con.from] = NEATNode(0f)
             if (!nodes.containsKey(con.to))
-                nodes[con.to] = NodeGene(0f)
+                nodes[con.to] = NEATNode(0f)
             nodes[con.to]!!.connections.add(con)
         }
 
@@ -121,12 +124,12 @@ class Genome(private val config: NEATConfig) : eu.timerertim.knevo.Genome, Clone
         }
 
         for (i in 0 until config.outputs) {
-            output[i] = nodes[config.inputs + config.hiddenNodes + i]!!.getValue()
+            output[i] = nodes[config.inputs + i]!!.getValue()
         }
         return output
     }
 
-    private fun NodeGene.getValue(): Float {
+    private fun NEATNode.getValue(): Float {
         if (isActivated) {
             return value
         }
@@ -148,14 +151,14 @@ class Genome(private val config: NEATConfig) : eu.timerertim.knevo.Genome, Clone
     fun mutate() {
         // mutate mutation rates
         for ((key, value) in mutationRates) {
-            if (Seed.random.nextBoolean()) {
+            if (Random.nextBoolean()) {
                 mutationRates[key] = 0.95f * value
             } else {
                 mutationRates[key] = 1.05263f * value
             }
         }
 
-        if (Seed.random.nextFloat() <= mutationRates[MutationKeys.WEIGHT_MUTATION_CHANCE]!!) {
+        if (Random.nextFloat() <= mutationRates[MutationKeys.WEIGHT_MUTATION_CHANCE]!!) {
             mutateWeight()
         }
 
@@ -184,9 +187,9 @@ class Genome(private val config: NEATConfig) : eu.timerertim.knevo.Genome, Clone
 
     private fun mutateWeight() {
         for (c in connectionGeneList) {
-            if (Seed.random.nextFloat() < Defaults.WEIGHT_CHANCE) {
-                if (Seed.random.nextFloat() < Defaults.PERTURB_CHANCE)
-                    c.weight = c.weight + (2 * Seed.random.nextFloat() - 1) * Defaults.STEPS
+            if (Seed.random.nextFloat() < NEATDefaults.WEIGHT_CHANCE) {
+                if (Seed.random.nextFloat() < NEATDefaults.PERTURB_CHANCE)
+                    c.weight = c.weight + (2 * Seed.random.nextFloat() - 1) * NEATDefaults.STEPS
                 else
                     c.weight = 4 * Seed.random.nextFloat() - 2
             }
@@ -195,7 +198,8 @@ class Genome(private val config: NEATConfig) : eu.timerertim.knevo.Genome, Clone
 
     private fun mutateAddConnection(forceBias: Boolean) {
         generateNetwork()
-        val random2 = Seed.random.nextInt(nodes.size - config.inputs - 1) + config.inputs + 1
+        val random2 = Seed.random.nextInt(nodes.size - config.inputs - config.outputs + 1) +
+                config.inputs + config.outputs - 1
         var random1 = Seed.random.nextInt(nodes.size)
         if (forceBias)
             random1 = config.inputs
@@ -225,16 +229,10 @@ class Genome(private val config: NEATConfig) : eu.timerertim.knevo.Genome, Clone
 
     internal fun mutateAddNode() {
         generateNetwork()
-        if (connectionGeneList.size > 0) {
-            var timeoutCount = 0
-            var randomCon = connectionGeneList[Seed.random.nextInt(connectionGeneList.size)]
-            while (!randomCon.isEnabled) {
-                randomCon = connectionGeneList[Seed.random.nextInt(connectionGeneList.size)]
-                timeoutCount++
-                if (timeoutCount > config.hiddenNodes)
-                    return
-            }
-            val nextNode = nodes.size - config.outputs
+        val enabledConnections = connectionGeneList.filter { it.isEnabled }
+        if (enabledConnections.isNotEmpty()) {
+            val randomCon = enabledConnections.random()
+            val nextNode = nodes.size
             randomCon.isEnabled = false
             connectionGeneList.add(
                 ConnectionGene(
@@ -283,24 +281,22 @@ class Genome(private val config: NEATConfig) : eu.timerertim.knevo.Genome, Clone
 
     companion object {
 
-        fun crossOver(parent1: Genome, parent2: Genome): Genome {
-            var parent1 = parent1
-            var parent2 = parent2
-            if (parent1.fitness < parent2.fitness) {
-                val temp = parent1
-                parent1 = parent2
-                parent2 = temp
+        fun crossOver(parent1: NEATNetwork, parent2: NEATNetwork): NEATNetwork {
+            val (fitParent, loserParent) = if (parent1.fitness < parent2.fitness) {
+                parent2 to parent1
+            } else {
+                parent1 to parent2
             }
 
-            val child = Genome(parent1.config)
+            val child = NEATNetwork(fitParent.config)
             val geneMap1 = TreeMap<Long, ConnectionGene>()
             val geneMap2 = TreeMap<Long, ConnectionGene>()
 
-            for (con in parent1.connectionGeneList) {
+            for (con in fitParent.connectionGeneList) {
                 geneMap1[con.innovation] = con
             }
 
-            for (con in parent2.connectionGeneList) {
+            for (con in loserParent.connectionGeneList) {
                 geneMap2[con.innovation] = con
             }
 
@@ -324,7 +320,7 @@ class Genome(private val config: NEATConfig) : eu.timerertim.knevo.Genome, Clone
                         trait?.isEnabled = Seed.random.nextFloat() >= 0.75f
                     }
 
-                } else if (parent1.fitness == parent2.fitness) {               // disjoint or excess and equal fitness
+                } else if (fitParent.fitness == loserParent.fitness) {               // disjoint or excess and equal fitness
                     trait = if (geneMap1.containsKey(key))
                         geneMap1[key]
                     else
@@ -348,7 +344,7 @@ class Genome(private val config: NEATConfig) : eu.timerertim.knevo.Genome, Clone
         }
 
 
-        fun isSameSpecies(g1: Genome, g2: Genome): Boolean {
+        fun isSameSpecies(g1: NEATNetwork, g2: NEATNetwork): Boolean {
             val geneMap1 = TreeMap<Long, ConnectionGene>()
             val geneMap2 = TreeMap<Long, ConnectionGene>()
 
@@ -388,9 +384,9 @@ class Genome(private val config: NEATConfig) : eu.timerertim.knevo.Genome, Clone
 
             if (N > 0)
                 delta =
-                    (Defaults.DISJOINT_COEFFICENT * disjoint) / N + Defaults.WEIGHT_COEFFICENT * weight / matching
+                    (NEATDefaults.DISJOINT_COEFFICENT * disjoint) / N + NEATDefaults.WEIGHT_COEFFICENT * weight / matching
 
-            return delta < Defaults.COMPATIBILITY_THRESHOLD
+            return delta < NEATDefaults.COMPATIBILITY_THRESHOLD
 
         }
     }

@@ -1,9 +1,14 @@
+@file:JvmName("NEAT")
+@file:JvmMultifileClass
+
 package eu.timerertim.knevo.neat
+
+typealias Node = NEATNode
 
 /**
  * NodeGene represents the nodes of the neural network
  */
-class NodeGene(var value: Float) {
+class NEATNode(var value: Float) {
 
     var isActivated: Boolean = false
     val connections = ArrayList<ConnectionGene>()

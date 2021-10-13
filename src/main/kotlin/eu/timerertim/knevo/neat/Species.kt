@@ -1,16 +1,18 @@
+@file:JvmName("NEAT")
+@file:JvmMultifileClass
+
 package eu.timerertim.knevo.neat
 
-import eu.timerertim.knevo.neat.config.Defaults
-import eu.timerertim.knevo.neat.config.Seed
+import eu.timerertim.knevo.neat.config.NEATDefaults
 
 class Species() : Comparable<Species> {
 
-    val genomes = ArrayList<Genome>()
+    val genomes = ArrayList<NEATNetwork>()
 
     var topFitness = 0f
 
     val isStale: Boolean
-        get() = staleness < Defaults.STALE_SPECIES
+        get() = staleness < NEATDefaults.STALE_SPECIES
 
     private var staleness = 0
 
@@ -27,10 +29,10 @@ class Species() : Comparable<Species> {
     val totalAdjustedFitness: Float
         get() = genomes.sumOf { it.adjustedFitness.toDouble() }.toFloat()
 
-    val topGenome: Genome
+    val topGenome: NEATNetwork
         get() = genomes.maxByOrNull { it.fitness }!!
 
-    constructor(top: Genome) : this() {
+    constructor(top: NEATNetwork) : this() {
         genomes.add(top)
     }
 
@@ -51,9 +53,9 @@ class Species() : Comparable<Species> {
     }
 
 
-    fun breedChild(): Genome {
-        val child = if (random.nextFloat() < Defaults.CROSSOVER_CHANCE) {
-            Genome.crossOver(genomes.random(Seed.random), genomes.random(Seed.random))
+    fun breedChild(): NEATNetwork {
+        val child = if (random.nextFloat() < NEATDefaults.CROSSOVER_CHANCE) {
+            NEATNetwork.crossOver(genomes.random(Seed.random), genomes.random(Seed.random))
         } else {
             genomes.random(Seed.random).clone()
         }

@@ -1,3 +1,6 @@
+@file:JvmName("Instinct")
+@file:JvmMultifileClass
+
 package eu.timerertim.knevo.instinct
 
 import eu.timerertim.knevo.activation.*
@@ -8,7 +11,7 @@ import kotlin.reflect.full.valueParameters
 
 typealias InstinctInstanceBuilder = InstinctInstance.Builder
 
-var DefaultInstinctInstance = InstinctInstance(2, 1)
+var globalInstinctInstance = InstinctInstance(2, 1)
 
 data class InstinctInstance @JvmOverloads constructor(
     val inputs: Int,
@@ -17,7 +20,7 @@ data class InstinctInstance @JvmOverloads constructor(
     val inputActivations: List<ActivationFunction> = listOf(Identity()),
     val outputActivations: List<ActivationFunction> = listOf(Identity()),
     val hiddenActivations: List<ActivationFunction> =
-        listOf(Sigmoid(), Tanh(), Step(), Sign(), Random(), Linear(), Sinus(), Relu(), Selu(), Silu()),
+        listOf(Sigmoid(), Tanh(), Step(), Sign(), Linear(), Sinus(), Relu(), Selu(), Silu()),
 
     val mutateAddNodeChance: Float = 1.05F,
     val mutateAddForwardConnectionChance: Float = 5.20F,

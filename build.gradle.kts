@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "eu.timerertim.knevo"
-version = "0.1.0-SNAPSHOT"
+version = "0.1.0-alpha"
 
 repositories {
     mavenCentral()
@@ -20,8 +20,8 @@ dependencies {
     implementation(kotlin("reflect"))
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.2")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.7.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.1")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.1")
 }
 
 tasks.test {

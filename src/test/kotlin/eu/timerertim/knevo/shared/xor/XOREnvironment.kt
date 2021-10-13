@@ -2,7 +2,6 @@ package eu.timerertim.knevo.shared.xor
 
 import eu.timerertim.knevo.Environment
 import eu.timerertim.knevo.Genome
-import kotlin.math.abs
 
 class XOREnvironment : Environment<Genome> {
     override fun evaluateFitness(population: List<Genome>) {
@@ -14,9 +13,9 @@ class XOREnvironment : Environment<Genome> {
                     val output = gene(inputs)
                     gene.doReset = true
                     val expected = i xor j
-                    fitness += 1 - abs(expected - output[0])
+                    fitness += (expected - output[0]) * (expected - output[0])
                 }
-            gene.fitness = fitness
+            gene.fitness = 1 - fitness
         }
     }
 }

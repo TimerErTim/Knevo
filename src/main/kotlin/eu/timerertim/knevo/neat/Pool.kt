@@ -1,8 +1,11 @@
+@file:JvmName("NEAT")
+@file:JvmMultifileClass
+
 package eu.timerertim.knevo.neat
 
 import eu.timerertim.knevo.Environment
-import eu.timerertim.knevo.neat.config.Defaults
 import eu.timerertim.knevo.neat.config.NEATConfig
+import eu.timerertim.knevo.neat.config.NEATDefaults
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
@@ -19,24 +22,24 @@ class Pool(private val config: NEATConfig = NEATConfig()) {
 
     private val random = Random(2000)
 
-    val topGenome: Genome
+    val topGenome: NEATNetwork
         get() = species.flatMap { it.genomes }.maxByOrNull { it.fitness }!!
 
 
     fun initializePool() {
         for (i in 0 until config.population) {
-            addToSpecies(Genome(config))
+            addToSpecies(NEATNetwork(config))
         }
     }
 
-    private fun addToSpecies(genome: Genome) {
+    private fun addToSpecies(genome: NEATNetwork) {
         for (species in species) {
             if (species.genomes.isEmpty()) {
                 continue
             }
 
             val first = species.genomes.first()
-            if (Genome.isSameSpecies(genome, first)) {
+            if (NEATNetwork.isSameSpecies(genome, first)) {
                 species.genomes.add(genome)
                 return
             }
@@ -47,7 +50,7 @@ class Pool(private val config: NEATConfig = NEATConfig()) {
         species.add(child)
     }
 
-    fun evaluateFitness(environment: Environment<Genome>) {
+    fun evaluateFitness(environment: Environment<NEATNetwork>) {
         runBlocking {
             species.flatMap { it.genomes }
                 .chunked(config.batchSize)
@@ -105,7 +108,7 @@ class Pool(private val config: NEATConfig = NEATConfig()) {
 
         survived.sortDescending()
 
-        if (poolStaleness > Defaults.STALE_POOL) {
+        if (poolStaleness > NEATDefaults.STALE_POOL) {
             for (i in survived.size downTo 2)
                 survived.removeAt(i)
         }
@@ -127,7 +130,7 @@ class Pool(private val config: NEATConfig = NEATConfig()) {
         removeWeakGenomesFromSpecies()
         removeStaleSpecies()
         val globalAdjustedFitness = calculateGlobalAdjustedFitness()
-        val children = ArrayList<Genome>()
+        val children = ArrayList<NEATNetwork>()
         var carryOver = 0f
         for (species in species) {
             val fchild = config.population * (species.totalAdjustedFitness / globalAdjustedFitness)

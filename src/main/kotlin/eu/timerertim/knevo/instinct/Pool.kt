@@ -1,8 +1,11 @@
+@file:JvmName("Instinct")
+@file:JvmMultifileClass
+
 package eu.timerertim.knevo.instinct
 
 import eu.timerertim.knevo.Environment
 import eu.timerertim.knevo.Population
-import eu.timerertim.knevo.instinct.Network.Companion.offspring
+import eu.timerertim.knevo.instinct.InstinctNetwork.Companion.offspring
 import eu.timerertim.knevo.selection.FitnessProportionate
 import eu.timerertim.knevo.selection.Power
 import eu.timerertim.knevo.selection.SelectionFunction
@@ -18,11 +21,12 @@ import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.full.valueParameters
 import kotlin.reflect.jvm.jvmName
 
-typealias InstinctPool = Pool
-typealias InstinctPoolBuilder = Pool.Builder
+typealias Pool = InstinctPool
+typealias PoolBuilder = InstinctPool.Builder
+typealias InstinctPoolBuilder = PoolBuilder
 
 @JvmSynthetic
-fun InstinctInstance.PoolBuilder() = InstinctPoolBuilder(this)
+fun InstinctInstance.PoolBuilder() = PoolBuilder(this)
 
 @JvmSynthetic
 fun InstinctInstance.Pool(
@@ -46,7 +50,7 @@ fun InstinctInstance.Pool(
 }.build()
 
 
-class Pool @JvmOverloads constructor(
+class InstinctPool @JvmOverloads constructor(
     val populationSize: Int = 400,
     val threads: Int = 1,
     val elitism: Int = 5,
@@ -56,7 +60,7 @@ class Pool @JvmOverloads constructor(
     val gatesGrowth: Float = 0F,
     val select: SelectionFunction = Power(5),
     private val pool: MutableList<InstinctNetwork> = Array(populationSize) { instance.Network() }.toMutableList(),
-    val instance: InstinctInstance = DefaultInstinctInstance
+    val instance: InstinctInstance = globalInstinctInstance
 ) : Population<InstinctNetwork>, List<InstinctNetwork> by pool {
     override var generation = 0L
 
@@ -144,7 +148,7 @@ class Pool @JvmOverloads constructor(
     }
 
     data class Builder @JvmOverloads constructor(
-        val instance: InstinctInstance = DefaultInstinctInstance
+        val instance: InstinctInstance = globalInstinctInstance
     ) {
         var populationSize: Int? = null
         var threads: Int? = null

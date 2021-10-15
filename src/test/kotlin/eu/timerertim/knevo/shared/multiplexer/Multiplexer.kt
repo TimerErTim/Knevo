@@ -1,5 +1,6 @@
 package eu.timerertim.knevo.shared.multiplexer
 
+import java.util.*
 import java.util.concurrent.ThreadLocalRandom
 import kotlin.math.abs
 
@@ -13,7 +14,7 @@ class Multiplexer(val addressBits: Int) {
         val result = Array(1 shl totalBits) { BooleanArray(totalBits) }
 
         for (i in result.indices) {
-            val bitString = String.format("%${totalBits}s", Integer.toBinaryString(i)).replace(' ', '0')
+            val bitString = "%${totalBits}s".format(Locale.ROOT, Integer.toBinaryString(i)).replace(' ', '0')
             result[i] = bitString.toCharArray().map { it == '1' }.toBooleanArray()
         }
 

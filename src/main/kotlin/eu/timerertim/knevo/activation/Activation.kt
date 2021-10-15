@@ -181,7 +181,8 @@ data class Linear @JvmOverloads constructor(private val gradient: Float = 1F) : 
 }
 
 /**
- * This function returns a special [Linear] [] [ActivationFunction], which returns its input as output, called [Identity].
+ * This function returns a special [Linear] [] [ActivationFunction], which returns its input as output, called
+ * [Identity].
  */
 fun Identity() = identity
 private val identity by lazy { Linear() }

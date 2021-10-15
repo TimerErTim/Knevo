@@ -5,7 +5,11 @@ package eu.timerertim.knevo.instinct
 
 import eu.timerertim.knevo.Genome
 import eu.timerertim.knevo.activation.ActivationFunction
-import java.io.*
+import java.io.FileInputStream
+import java.io.FileNotFoundException
+import java.io.InputStream
+import java.io.ObjectInputStream
+import java.io.Serializable
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sqrt
@@ -307,6 +311,7 @@ class InstinctNetwork @JvmOverloads constructor(val instance: InstinctInstance =
         }
     }
 
+    @Suppress("SerialVersionUIDInSerializableClass")
     inner class Connection @JvmOverloads constructor(
         val from: InstinctNode,
         val to: InstinctNode,
@@ -384,7 +389,7 @@ class InstinctNetwork @JvmOverloads constructor(val instance: InstinctInstance =
         }
     }
 
-
+    @Suppress("SerialVersionUIDInSerializableClass")
     abstract inner class AbstractNode(var bias: Float = 0F, var activate: ActivationFunction) : Serializable {
         var selfConnection: InstinctConnection? = null
         val incomingConnections = mutableListOf<InstinctConnection>()
@@ -492,6 +497,7 @@ class InstinctNetwork @JvmOverloads constructor(val instance: InstinctInstance =
         }
 
         @JvmStatic
+        @Suppress("SwallowedException")
         fun load(path: String): InstinctNetwork? {
             return try {
                 load(FileInputStream(path))

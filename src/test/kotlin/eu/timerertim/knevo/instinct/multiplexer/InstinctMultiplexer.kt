@@ -1,6 +1,14 @@
 package eu.timerertim.knevo.instinct.multiplexer
 
-import eu.timerertim.knevo.activation.*
+import eu.timerertim.knevo.activation.Linear
+import eu.timerertim.knevo.activation.Relu
+import eu.timerertim.knevo.activation.Selu
+import eu.timerertim.knevo.activation.Sigmoid
+import eu.timerertim.knevo.activation.Sign
+import eu.timerertim.knevo.activation.Silu
+import eu.timerertim.knevo.activation.Sinus
+import eu.timerertim.knevo.activation.Step
+import eu.timerertim.knevo.activation.Tanh
 import eu.timerertim.knevo.instinct.InstinctInstanceBuilder
 import eu.timerertim.knevo.instinct.InstinctNetwork
 import eu.timerertim.knevo.instinct.InstinctPoolBuilder

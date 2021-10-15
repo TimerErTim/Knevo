@@ -39,13 +39,13 @@ val MAVEN_UPLOAD_USER: String? by project
 val MAVEN_UPLOAD_PWD: String? by project
 
 tasks {
-    val sourcesJar by registering(Jar::class) {
+    register("sourcesJar", Jar::class) {
         dependsOn(JavaPlugin.CLASSES_TASK_NAME)
         archiveClassifier.set("sources")
         from(sourceSets["main"].allSource)
     }
 
-    val javadocJar by registering(Jar::class) {
+    register("javadocJar", Jar::class) {
         dependsOn("dokkaJavadoc")
         archiveClassifier.set("javadoc")
         from(javadoc)

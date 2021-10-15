@@ -9,7 +9,11 @@ import eu.timerertim.knevo.instinct.InstinctNetwork.Companion.offspring
 import eu.timerertim.knevo.selection.FitnessProportionate
 import eu.timerertim.knevo.selection.Power
 import eu.timerertim.knevo.selection.SelectionFunction
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.joinAll
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.io.FileInputStream
 import java.io.FileNotFoundException
 import java.io.InputStream
@@ -58,7 +62,7 @@ class InstinctPool @JvmOverloads constructor(
     val nodesGrowth: Float = 0F,
     val connectionsGrowth: Float = 0F,
     val gatesGrowth: Float = 0F,
-    val select: SelectionFunction = Power(5),
+    val select: SelectionFunction = Power(exponent = 5),
     private val pool: MutableList<InstinctNetwork> = Array(populationSize) { instance.Network() }.toMutableList(),
     val instance: InstinctInstance = globalInstinctInstance
 ) : Population<InstinctNetwork>, List<InstinctNetwork> by pool {
@@ -138,6 +142,7 @@ class InstinctPool @JvmOverloads constructor(
         }
 
         @JvmStatic
+        @Suppress("SwallowedException")
         fun load(path: String): InstinctPool? {
             return try {
                 load(FileInputStream(path))

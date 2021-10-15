@@ -74,8 +74,13 @@ data class FitnessProportionate private constructor(
                 totalScore += candidate.score
             }
 
-            minimumScore = minimumScore.nextDown()
-            totalScore += minimumScore * candidates.size
+            minimumScore = if (minimumScore < 0) {
+                minimumScore.nextDown().also {
+                    totalScore -= it * candidates.size
+                }
+            } else {
+                0F
+            }
             Pair(totalScore, minimumScore)
         }
 

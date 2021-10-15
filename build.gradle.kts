@@ -48,7 +48,7 @@ tasks {
     register("javadocJar", Jar::class) {
         dependsOn("dokkaJavadoc")
         archiveClassifier.set("javadoc")
-        from(javadoc)
+        from(dokkaJavadoc)
     }
 }
 

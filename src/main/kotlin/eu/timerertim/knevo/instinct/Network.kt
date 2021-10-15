@@ -7,10 +7,13 @@ import eu.timerertim.knevo.Genome
 import eu.timerertim.knevo.activation.ActivationFunction
 import java.io.FileInputStream
 import java.io.FileNotFoundException
+import java.io.IOException
 import java.io.InputStream
 import java.io.InvalidClassException
 import java.io.ObjectInputStream
+import java.io.OptionalDataException
 import java.io.Serializable
+import java.io.StreamCorruptedException
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sqrt
@@ -21,10 +24,25 @@ typealias Network = InstinctNetwork
 typealias InstinctConnection = InstinctNetwork.Connection
 typealias InstinctNode = InstinctNetwork.Node
 
+/**
+ * A [Genome] as described by the neuroevolution algorithm described in [InstinctInstance]. It consists of
+ * [connections][InstinctNetwork.connections] and [nodes][InstinctNetwork.nodes]. The
+ * [instance][InstinctNetwork.instance] used to create this network determines its mutation chances, possible
+ * [ActivationFunction]s and [input][InstinctInstance.inputs] and [output][InstinctInstance.outputs] size.
+ */
 fun InstinctInstance.Network() = InstinctNetwork(this)
 
+/**
+ * A [Genome] as described by the neuroevolution algorithm described in [InstinctInstance]. It consists of [connections]
+ * and [nodes]. The [instance] used to create this network determines its mutation chances, possible
+ * [ActivationFunction]s and [input][InstinctInstance.inputs] and [output][InstinctInstance.outputs] size.
+ */
 class InstinctNetwork @JvmOverloads constructor(val instance: InstinctInstance = globalInstinctInstance) :
     Genome {
+    /**
+     * Create a new [InstinctNetwork] which is [base]d on the given one (creates basically a copy). The [instance] is
+     * inferred from the given network.
+     */
     constructor(base: InstinctNetwork) : this(base.instance) {
         nodes.clear()
         base.nodes.sortedBy {
@@ -46,6 +64,9 @@ class InstinctNetwork @JvmOverloads constructor(val instance: InstinctInstance =
     }
 
     // Genes
+    /**
+     * A list of all [Connection]s in this Network. More or less the genotype together with [nodes].
+     */
     val connections = object : ArrayList<InstinctConnection>() {
         override fun removeAt(index: Int): InstinctConnection {
             val element = get(index)
@@ -63,6 +84,10 @@ class InstinctNetwork @JvmOverloads constructor(val instance: InstinctInstance =
             return result
         }
     }
+
+    /**
+     * A list of all [Node]s in this Network. More or less the genotype together with [connections].
+     */
     val nodes = object : ArrayList<InstinctNode>() {
         override fun clear() {
             super.clear()
@@ -85,12 +110,20 @@ class InstinctNetwork @JvmOverloads constructor(val instance: InstinctInstance =
         }
     }
 
+
     override var fitness = 0F
         set(value) {
             field = value
             score = value
         }
+
+    /**
+     * The [score] is used to compare this network with others. By default, it is set by [fitness], but can manually
+     * be assigned a different value. The [InstinctPool] can be configured to apply a penalty on this network by
+     * lowering its score depending on the networks size and complexity.
+     */
     override var score = 0F
+
     override var doReset = false
 
     init {
@@ -111,6 +144,10 @@ class InstinctNetwork @JvmOverloads constructor(val instance: InstinctInstance =
         }
     }
 
+    /**
+     * Invokes this [Network]. That means taking the given [input], processing the neural network and returning the
+     * value of its output neurons.
+     */
     override fun invoke(input: FloatArray): FloatArray {
         prepareNetwork()
 
@@ -149,6 +186,10 @@ class InstinctNetwork @JvmOverloads constructor(val instance: InstinctInstance =
         }
     }
 
+
+    /**
+     * Adds a new random [Node] between two already connected nodes.
+     */
     fun mutateAddNode() {
         val connection = connections.randomOrNull() ?: return
         val gater = connection.gater
@@ -162,6 +203,9 @@ class InstinctNetwork @JvmOverloads constructor(val instance: InstinctInstance =
         connections.remove(connection)
     }
 
+    /**
+     * Adds a new forward [Connection] between two not already connected [Node]s.
+     */
     fun mutateAddForwardConnection() {
         val pairs = mutableListOf<Pair<InstinctNode, InstinctNode>>()
         for (from in nodes) {
@@ -179,6 +223,10 @@ class InstinctNetwork @JvmOverloads constructor(val instance: InstinctInstance =
         Connection(pair.first, pair.second, Random.nextFloat() * 2 - 1)
     }
 
+    /**
+     * Adds a new [Connection] to and from the same [Node]. This connection is responsible for
+     * "remembering" the node's [state][Node.state] between multiple [invoke] calls.
+     */
     fun mutateAddSelfConnection() {
         val pairs = mutableListOf<Pair<InstinctNode, InstinctNode>>()
 
@@ -195,6 +243,10 @@ class InstinctNetwork @JvmOverloads constructor(val instance: InstinctInstance =
         Connection(pair.first, pair.second, Random.nextFloat() * 2 - 1)
     }
 
+    /**
+     * Adds a new recurrent [Connection] leading back from one [Node] to another. This connection uses its
+     * [from][Connection.from] node's previous [value][Node.value] when [invoking][invoke] the network.
+     */
     fun mutateAddRecurrentConnection() {
         val pairs = mutableListOf<Pair<InstinctNode, InstinctNode>>()
         for (from in nodes.drop(instance.inputs)) {
@@ -212,21 +264,34 @@ class InstinctNetwork @JvmOverloads constructor(val instance: InstinctInstance =
         Connection(pair.first, pair.second, Random.nextFloat() * 2 - 1)
     }
 
+    /**
+     * Changes the [gate][Connection.gater] of a random [Connection].
+     */
     fun mutateAddGate() {
         val connection = connections.randomOrNull() ?: return
         connection.gater = nodes.random()
     }
 
+    /**
+     * Changes the [weight][Connection.weight] of a random [Connection]. The change is in the range of [-1, 1).
+     */
     fun mutateWeight() {
         val connection = connections.randomOrNull() ?: return
         connection.weight += Random.nextFloat() * 2 - 1
     }
 
+    /**
+     * Changes the [bias][Node.bias] of a random [Node]. The change is in the range of [-1, 1).
+     */
     fun mutateBias() {
         val node = nodes.drop(instance.inputs).random()
         node.bias += Random.nextFloat() * 2 - 1
     }
 
+    /**
+     * Changes the [activation][Node.activate] of a random [Node]. Possible [ActivationFunction]s are defined in the
+     * [instance].
+     */
     fun mutateActivation() {
         val node = nodes.random()
         val activation = when (node) {
@@ -238,6 +303,9 @@ class InstinctNetwork @JvmOverloads constructor(val instance: InstinctInstance =
         node.activate = activation
     }
 
+    /**
+     * Removes a [Node]. Creates a [Connection] between every node that has been connected before.
+     */
     fun mutateRemoveNode() {
         val node = nodes.drop(instance.inputs).dropLast(instance.outputs).randomOrNull() ?: return
 
@@ -271,6 +339,9 @@ class InstinctNetwork @JvmOverloads constructor(val instance: InstinctInstance =
         nodes -= node
     }
 
+    /**
+     * Removes a [Connection]. Connections are not removed if they are the only connection to or from a [Node].
+     */
     fun mutateRemoveConnection() {
         val connection = connections
             .filter { it.from.outgoingConnections.size > 1 && it.to.incomingConnections.size > 1 }.randomOrNull()
@@ -278,11 +349,17 @@ class InstinctNetwork @JvmOverloads constructor(val instance: InstinctInstance =
         connections -= connection
     }
 
+    /**
+     * Removes the [gate][Connection.gater] from a gated [Connection].
+     */
     fun mutateRemoveGate() {
         val connection = connections.filter { it.gater != null }.randomOrNull() ?: return
         connection.gater = null
     }
 
+    /**
+     * Performs all mutations in this [InstinctNetwork] with the chances defined by the [instance].
+     */
     fun mutate() {
         performMutation(instance.mutateAddNodeChance, this::mutateAddNode)
         performMutation(instance.mutateAddForwardConnectionChance, this::mutateAddForwardConnection)
@@ -312,6 +389,11 @@ class InstinctNetwork @JvmOverloads constructor(val instance: InstinctInstance =
         }
     }
 
+    /**
+     * This connects two [Node]s with each other. The connection leads [from] one node [to] another one. Furthermore,
+     * the [gater] is an optional node, which influences the [weight] with its [value][Node.value]. Creating
+     * a new connection automatically adds it to the according [InstinctNetwork].
+     */
     @Suppress("SerialVersionUIDInSerializableClass")
     inner class Connection @JvmOverloads constructor(
         val from: InstinctNode,
@@ -319,6 +401,10 @@ class InstinctNetwork @JvmOverloads constructor(val instance: InstinctInstance =
         var weight: Float = 0F,
         var gater: InstinctNode? = null
     ) : Serializable {
+        /**
+         * Creates a [Connection] between the [Node] with the index [fromIndex] and the node with the [toIndex].
+         * The [gater] will be the node with the index [gaterIndex] or none if there is none with the given index.
+         */
         @JvmOverloads
         constructor(fromIndex: Int, toIndex: Int, weight: Float = 0F, gaterIndex: Int = -1) : this(
             nodes[fromIndex],
@@ -327,8 +413,19 @@ class InstinctNetwork @JvmOverloads constructor(val instance: InstinctInstance =
             nodes.getOrNull(gaterIndex)
         )
 
+        /**
+         * The index of the [from] node.
+         */
         val fromIndex get() = from.index
+
+        /**
+         * The index of the [to] node.
+         */
         val toIndex get() = to.index
+
+        /**
+         * The index of the [gater] node.
+         */
         var gaterIndex
             get() = gater?.index ?: -1
             set(value) {
@@ -381,6 +478,11 @@ class InstinctNetwork @JvmOverloads constructor(val instance: InstinctInstance =
         }
     }
 
+    /**
+     * This class is a [HiddenNode] inside this [InstinctNetwork]. Upon creation, it is automatically integrated into
+     * this network as a hidden node. The [index] specifies where the node should be inserted in the [nodes] list.
+     * The [activation][activate] s the [ActivationFunction] used by this node.
+     */
     inner class HiddenNode @JvmOverloads constructor(
         index: Int, bias: Float = 0F,
         activation: ActivationFunction = instance.hiddenActivations.random()
@@ -390,21 +492,55 @@ class InstinctNetwork @JvmOverloads constructor(val instance: InstinctInstance =
         }
     }
 
+    /**
+     * The [Node] is a neuron inside this network. It is connected to other neurons using [Connection]s. It has two
+     * configurable parameters:
+     * - [bias]: The value statically added to this neuron when [invoking][invoke] the network
+     * - [activate]: The [ActivationFunction] used when calculating the [value] of this neuron
+     */
     @Suppress("SerialVersionUIDInSerializableClass")
     abstract inner class Node(var bias: Float = 0F, var activate: ActivationFunction) : Serializable {
+        /**
+         * The [Connection] leading from and to this [Node]. This is optional so the property may be null.
+         */
         var selfConnection: InstinctConnection? = null
+
+        /**
+         * A list of all incoming [Connection]s.
+         */
         val incomingConnections = mutableListOf<InstinctConnection>()
+
+        /**
+         * A list of all outgoing [Connection]s.
+         */
         val outgoingConnections = mutableListOf<InstinctConnection>()
+
+        /**
+         * The index of this [Node].
+         */
         val index get() = nodes.indexOf(this)
 
+        /**
+         * The internal state of this [Node] before getting the result of [activate].
+         */
         var state: Float = 0F
+
+        /**
+         * The value used for further calculation. By default, this is just the result of [activate] invoked with
+         * [state].
+         */
         var value: Float = 0F
     }
 
     companion object {
         private const val serialVersionUID = 0L
 
+        /**
+         * Performs a [crossover] between two [InstinctNetwork]s and [mutate]s the result before returning it. An
+         * [IllegalArgumentException] is thrown if [parent1] and [parent2] are of different [InstinctInstance]s.
+         */
         @JvmStatic
+        @Throws(IllegalArgumentException::class)
         fun offspring(parent1: InstinctNetwork, parent2: InstinctNetwork): InstinctNetwork {
             val child = crossover(parent1, parent2).apply {
                 mutate()
@@ -412,7 +548,12 @@ class InstinctNetwork @JvmOverloads constructor(val instance: InstinctInstance =
             return child
         }
 
+        /**
+         * Performs a crossover between two [InstinctNetwork]s and returns the resulting Network. [parent1] and
+         * [parent2] need to be of an equal [InstinctInstance], otherwise an [IllegalArgumentException] is thrown.
+         */
         @JvmStatic
+        @Throws(IllegalArgumentException::class)
         fun crossover(parent1: InstinctNetwork, parent2: InstinctNetwork): InstinctNetwork {
             require(parent1.instance == parent2.instance) {
                 "Can not perform crossover on networks based on different InstinctInstances"
@@ -488,7 +629,15 @@ class InstinctNetwork @JvmOverloads constructor(val instance: InstinctInstance =
             return child
         }
 
+        /**
+         * Loads an [InstinctNetwork] from the given [input]. Can throw [ClassNotFoundException],
+         * [InvalidClassException], [StreamCorruptedException], [OptionalDataException], [IOException].
+         */
         @JvmStatic
+        @Throws(
+            ClassNotFoundException::class, InvalidClassException::class, StreamCorruptedException::class,
+            OptionalDataException::class, IOException::class
+        )
         fun load(input: InputStream): InstinctNetwork {
             val genome = ObjectInputStream(input).readObject()
             if (genome !is InstinctNetwork) {
@@ -499,7 +648,15 @@ class InstinctNetwork @JvmOverloads constructor(val instance: InstinctInstance =
             return genome
         }
 
+        /**
+         * Loads an [InstinctNetwork] from the given [path]. Can throw [ClassNotFoundException],
+         * [InvalidClassException], [StreamCorruptedException], [OptionalDataException], [IOException].
+         */
         @JvmStatic
+        @Throws(
+            ClassNotFoundException::class, InvalidClassException::class, StreamCorruptedException::class,
+            OptionalDataException::class, IOException::class
+        )
         @Suppress("SwallowedException")
         fun load(path: String): InstinctNetwork? {
             return try {

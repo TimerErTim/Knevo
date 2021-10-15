@@ -1,6 +1,13 @@
 package eu.timerertim.knevo
 
-import java.io.*
+import java.io.FileInputStream
+import java.io.FileNotFoundException
+import java.io.FileOutputStream
+import java.io.InputStream
+import java.io.ObjectInputStream
+import java.io.ObjectOutputStream
+import java.io.OutputStream
+import java.io.Serializable
 import kotlin.reflect.jvm.jvmName
 
 interface Genome : Comparable<Genome>, (FloatArray) -> FloatArray, Serializable {
@@ -35,6 +42,7 @@ interface Genome : Comparable<Genome>, (FloatArray) -> FloatArray, Serializable 
         }
 
         @JvmStatic
+        @Suppress("SwallowedException")
         fun load(path: String): Genome? {
             return try {
                 load(FileInputStream(path))

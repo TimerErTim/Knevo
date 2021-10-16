@@ -4,6 +4,7 @@ import java.io.FileInputStream
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.InputStream
+import java.io.InvalidClassException
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 import java.io.OutputStream
@@ -33,8 +34,8 @@ interface Population<out G : Genome> : Collection<G>, Serializable {
         @JvmStatic
         fun load(input: InputStream): Population<*> {
             val population = ObjectInputStream(input).readObject()
-            check(population is Population<*>) {
-                "Cannot load object of type \"${population::class.jvmName}\" as Population"
+            if (population !is Population<*>) {
+                throw InvalidClassException("Cannot load object of type \"${population::class.jvmName}\" as Population")
             }
             return population
         }

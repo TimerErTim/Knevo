@@ -6,8 +6,10 @@ import java.io.FileOutputStream
 import java.io.InputStream
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
+import java.io.OptionalDataException
 import java.io.OutputStream
 import java.io.Serializable
+import java.io.StreamCorruptedException
 import kotlin.reflect.jvm.jvmName
 
 interface Genome : Comparable<Genome>, (FloatArray) -> FloatArray, Serializable {
@@ -35,8 +37,8 @@ interface Genome : Comparable<Genome>, (FloatArray) -> FloatArray, Serializable 
         @JvmStatic
         fun load(input: InputStream): Genome {
             val genome = ObjectInputStream(input).readObject()
-            check(genome is Genome) {
-                "Cannot load object of type \"${genome::class.jvmName}\" as Genome"
+            if (genome !is Genome) {
+                throw InvalidClassException("Cannot load object of type \"${genome::class.jvmName}\" as Genome")
             }
             return genome
         }

@@ -8,6 +8,7 @@ import eu.timerertim.knevo.activation.ActivationFunction
 import java.io.FileInputStream
 import java.io.FileNotFoundException
 import java.io.InputStream
+import java.io.InvalidClassException
 import java.io.ObjectInputStream
 import java.io.Serializable
 import kotlin.math.max
@@ -490,8 +491,10 @@ class InstinctNetwork @JvmOverloads constructor(val instance: InstinctInstance =
         @JvmStatic
         fun load(input: InputStream): InstinctNetwork {
             val genome = ObjectInputStream(input).readObject()
-            check(genome is InstinctNetwork) {
-                "Cannot load object of type \"${genome::class.jvmName}\" as InstinctNetwork"
+            if (genome !is InstinctNetwork) {
+                throw InvalidClassException(
+                    "Cannot load object of type \"${genome::class.jvmName}\" as InstinctNetwork"
+                )
             }
             return genome
         }

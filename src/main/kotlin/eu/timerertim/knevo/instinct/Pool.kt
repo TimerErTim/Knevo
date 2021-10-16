@@ -17,6 +17,7 @@ import kotlinx.coroutines.runBlocking
 import java.io.FileInputStream
 import java.io.FileNotFoundException
 import java.io.InputStream
+import java.io.InvalidClassException
 import java.io.ObjectInputStream
 import kotlin.math.min
 import kotlin.random.Random
@@ -135,8 +136,10 @@ class InstinctPool @JvmOverloads constructor(
         @JvmStatic
         fun load(input: InputStream): InstinctPool {
             val population = ObjectInputStream(input).readObject()
-            check(population is InstinctPool) {
-                "Cannot load object of type \"${population::class.jvmName}\" as InstinctPool"
+            if (population !is InstinctPool) {
+                throw InvalidClassException(
+                    "Cannot load object of type \"${population::class.jvmName}\" as InstinctPool"
+                )
             }
             return population
         }

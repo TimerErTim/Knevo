@@ -16,10 +16,12 @@ import eu.timerertim.knevo.instinct.globalInstinctInstance
 import eu.timerertim.knevo.selection.Tournament
 import eu.timerertim.knevo.shared.multiplexer.Multiplexer
 import eu.timerertim.knevo.shared.multiplexer.MultiplexerEnvironment
+import java.io.File
 
 
 fun main() {
-    runWith(3)
+    val network = runWith(3)
+    network.save("out${File.separator}InstinctMultiplexer_fully_trained.knv")
 }
 
 

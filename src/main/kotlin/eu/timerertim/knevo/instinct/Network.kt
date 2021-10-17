@@ -19,7 +19,7 @@ import kotlin.reflect.jvm.jvmName
 
 typealias Network = InstinctNetwork
 typealias InstinctConnection = InstinctNetwork.Connection
-typealias InstinctNode = InstinctNetwork.AbstractNode
+typealias InstinctNode = InstinctNetwork.Node
 
 fun InstinctInstance.Network() = InstinctNetwork(this)
 
@@ -37,7 +37,7 @@ class InstinctNetwork @JvmOverloads constructor(val instance: InstinctInstance =
             when (node) {
                 is InputNode -> InputNode(node.activate)
                 is OutputNode -> OutputNode(node.bias, node.activate)
-                else -> Node(index - instance.outputs, node.bias, node.activate)
+                else -> HiddenNode(index - instance.outputs, node.bias, node.activate)
             }
         }
         base.connections.forEach {
@@ -153,7 +153,7 @@ class InstinctNetwork @JvmOverloads constructor(val instance: InstinctInstance =
         val connection = connections.randomOrNull() ?: return
         val gater = connection.gater
 
-        val newNode = Node(connection.toIndex, Random.nextFloat() * 2 - 1)
+        val newNode = HiddenNode(connection.toIndex, Random.nextFloat() * 2 - 1)
         val connection1 = Connection(connection.from, newNode, Random.nextFloat() * 2 - 1)
         val connection2 = Connection(newNode, connection.to, Random.nextFloat() * 2 - 1)
 
@@ -366,7 +366,7 @@ class InstinctNetwork @JvmOverloads constructor(val instance: InstinctInstance =
 
     private inner class InputNode(
         activation: ActivationFunction = instance.inputActivations.random()
-    ) : AbstractNode(activate = activation) {
+    ) : Node(activate = activation) {
         init {
             nodes += (this)
         }
@@ -375,23 +375,23 @@ class InstinctNetwork @JvmOverloads constructor(val instance: InstinctInstance =
     private inner class OutputNode(
         bias: Float = 0F,
         activation: ActivationFunction = instance.outputActivations.random()
-    ) : AbstractNode(bias, activation) {
+    ) : Node(bias, activation) {
         init {
             nodes += (this)
         }
     }
 
-    inner class Node @JvmOverloads constructor(
+    inner class HiddenNode @JvmOverloads constructor(
         index: Int, bias: Float = 0F,
         activation: ActivationFunction = instance.hiddenActivations.random()
-    ) : AbstractNode(bias, activation) {
+    ) : Node(bias, activation) {
         init {
             nodes.add(min(index, nodes.size - instance.outputs), this)
         }
     }
 
     @Suppress("SerialVersionUIDInSerializableClass")
-    abstract inner class AbstractNode(var bias: Float = 0F, var activate: ActivationFunction) : Serializable {
+    abstract inner class Node(var bias: Float = 0F, var activate: ActivationFunction) : Serializable {
         var selfConnection: InstinctConnection? = null
         val incomingConnections = mutableListOf<InstinctConnection>()
         val outgoingConnections = mutableListOf<InstinctConnection>()
@@ -455,7 +455,7 @@ class InstinctNetwork @JvmOverloads constructor(val instance: InstinctInstance =
                     is InputNode -> child.InputNode(node.activate)
                     is OutputNode -> child.OutputNode(node.bias, node.activate)
                     else -> {
-                        val childNode = child.Node(index, node.bias, node.activate)
+                        val childNode = child.HiddenNode(index, node.bias, node.activate)
                         child.nodes -= childNode
                         child.nodes.add(index, childNode)
                     }

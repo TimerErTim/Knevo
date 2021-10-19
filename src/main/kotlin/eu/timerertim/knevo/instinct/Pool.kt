@@ -22,10 +22,9 @@ import java.io.InvalidClassException
 import java.io.ObjectInputStream
 import java.io.OptionalDataException
 import java.io.StreamCorruptedException
-import kotlin.math.min
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.random.Random
 import kotlin.reflect.full.declaredMemberProperties
-import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.full.valueParameters
 import kotlin.reflect.jvm.jvmName
 
@@ -46,7 +45,7 @@ fun InstinctInstance.PoolBuilder() = PoolBuilder(this)
  *
  * Configurable Parameters:
  * - [populationSize]: The amount of Networks in this Population
- * - [threads]: The amount of threads to be used (fewer threads may be used depending on populationSize)
+ * - [batchSize]: The amount of Networks in a single batch. Batches are evaluated and breded in parallel.
  * - [elitism]: This many best performing networks will be in the next generation without any changes
  * - [crossoverChance]: The chance of performing a crossover when breeding the next generation (otherwise mutate)
  * - [nodesGrowth]: The value subtracted from the [fitness][InstinctNetwork.fitness] of a network per hidden neuron
@@ -58,7 +57,7 @@ fun InstinctInstance.PoolBuilder() = PoolBuilder(this)
 @JvmSynthetic
 fun InstinctInstance.Pool(
     populationSize: Int? = null,
-    threads: Int? = null,
+    batchSize: Int? = null,
     elitism: Int? = null,
     crossoverChance: Float? = null,
     nodesGrowth: Float? = null,
@@ -67,7 +66,7 @@ fun InstinctInstance.Pool(
     select: SelectionFunction? = null
 ) = PoolBuilder().apply {
     populationSize(populationSize)
-    threads(threads)
+    batchSize(batchSize)
     elitism(elitism)
     crossoverChance(crossoverChance)
     nodesGrowth(nodesGrowth)
@@ -82,8 +81,8 @@ fun InstinctInstance.Pool(
  * [InstinctNetwork]s. The [instance][InstinctPool.instance] is used for all operations requiring an InstinctInstance.
  *
  * Configurable Parameters:
- * - [populationSize]: The amount of Networks in this Population
- * - [threads]: The amount of threads to be used (fewer threads may be used depending on populationSize)
+ * - [populationSize][InstinctPool.size]: The amount of Networks in this Population
+ * - [batchSize]: The amount of Networks in a single batch. Batches are evaluated and breded in parallel.
  * - [elitism]: This many best performing networks will be in the next generation without any changes
  * - [crossoverChance]: The chance of performing a crossover when breeding the next generation (otherwise mutate)
  * - [nodesGrowth]: The value subtracted from the [fitness][InstinctNetwork.fitness] of a network per hidden neuron
@@ -92,24 +91,63 @@ fun InstinctInstance.Pool(
  * - [select]: The SelectionFunction used by default when [breedNewGeneration][InstinctPool.breedNewGeneration] is
  * invoked
  */
-class InstinctPool @JvmOverloads constructor(
-    val populationSize: Int = 400,
-    val threads: Int = 1,
-    val elitism: Int = 5,
-    val crossoverChance: Float = 0.75F,
-    val nodesGrowth: Float = 0F,
-    val connectionsGrowth: Float = 0F,
-    val gatesGrowth: Float = 0F,
-    val select: SelectionFunction = Power(),
-    // TODO: Move to private map
-    private val pool: MutableList<InstinctNetwork> = Array(populationSize) { instance.Network() }.toMutableList(),
-    val instance: InstinctInstance = globalInstinctInstance
+class InstinctPool private constructor(
+    val batchSize: Int,
+    val elitism: Int,
+    val crossoverChance: Float,
+    val nodesGrowth: Float,
+    val connectionsGrowth: Float,
+    val gatesGrowth: Float,
+    val select: SelectionFunction,
+    val instance: InstinctInstance,
+    private val pool: MutableList<InstinctNetwork>
 ) : Population<InstinctNetwork>, List<InstinctNetwork> by pool {
+
+    /**
+     * A pretty generic, simple [Population] implementation used with the algorithm described in [InstinctInstance]. It does
+     * not feature speciation, but multithreading, different [SelectionFunction]s and size penalties for the
+     * [InstinctNetwork]s. The [instance][InstinctPool.instance] is used for all operations requiring an InstinctInstance.
+     *
+     * Configurable Parameters:
+     * - [populationSize]: The amount of Networks in this Population
+     * - [batchSize]: The amount of Networks in a single batch. Batches are evaluated and breded in parallel.
+     * - [elitism]: This many best performing networks will be in the next generation without any changes
+     * - [crossoverChance]: The chance of performing a crossover when breeding the next generation (otherwise mutate)
+     * - [nodesGrowth]: The value subtracted from the [fitness][InstinctNetwork.fitness] of a network per hidden neuron
+     * - [connectionsGrowth]: The value subtracted from the fitness of a network per connection
+     * - [gatesGrowth]: The value subtracted from the fitness of a network per gated connection
+     * - [select]: The SelectionFunction used by default when [breedNewGeneration][InstinctPool.breedNewGeneration] is
+     * invoked
+     */
+    @JvmOverloads
+    constructor(
+        populationSize: Int = 400,
+        batchSize: Int = populationSize,
+        elitism: Int = 5,
+        crossoverChance: Float = 0.75F,
+        nodesGrowth: Float = 0F,
+        connectionsGrowth: Float = 0F,
+        gatesGrowth: Float = 0F,
+        select: SelectionFunction = Power(),
+        instance: InstinctInstance = globalInstinctInstance
+    ) : this(
+        batchSize,
+        elitism,
+        crossoverChance,
+        nodesGrowth,
+        connectionsGrowth,
+        gatesGrowth,
+        select,
+        instance,
+        Array(populationSize) { instance.Network() }.toMutableList()
+    )
+
     /**
      * Keeps track of the current [generation] in this [Pool]. Is increased automatically upon invoking
      * [breedNewGeneration].
      */
     override var generation = 0L
+        private set
 
     /**
      * Evolves this [InstinctPool] using a given [environment] and [select] method. It invokes [evaluateFitness] and
@@ -122,8 +160,7 @@ class InstinctPool @JvmOverloads constructor(
 
     override fun evaluateFitness(environment: Environment<InstinctNetwork>) {
         runBlocking(Dispatchers.Default) {
-            // TODO: Change chunked method (right now is inaccurate)
-            pool.chunked(populationSize / threads + min(populationSize % threads, 1))
+            pool.chunked(batchSize)
                 .map { batch ->
                     launch {
                         environment.evaluateFitness(batch)
@@ -152,7 +189,7 @@ class InstinctPool @JvmOverloads constructor(
         if (select is FitnessProportionate) select.reset()
 
         val newPopulation = runBlocking(Dispatchers.Default) {
-            pool.chunked(populationSize / threads + min(populationSize % threads, 1))
+            pool.chunked(batchSize)
                 .map { batch ->
                     async {
                         val size = batch.size
@@ -163,7 +200,7 @@ class InstinctPool @JvmOverloads constructor(
                 }.flatMap { it.await() }
         }
 
-        for (index in elitism until populationSize) {
+        for (index in elitism until size) {
             pool[index] = newPopulation[index]
         }
 
@@ -187,6 +224,7 @@ class InstinctPool @JvmOverloads constructor(
 
     companion object {
         private const val serialVersionUID = 0L
+        private val poolMap = ConcurrentHashMap<Int, MutableList<InstinctNetwork>>()
 
         /**
          * Loads a [InstinctPool] from the given [input]. Can throw [ClassNotFoundException], [InvalidClassException],
@@ -239,10 +277,10 @@ class InstinctPool @JvmOverloads constructor(
         var populationSize: Int? = null
 
         /**
-         * The amount of computational threads to be used. The actual amount of used threads during [evolving][evolve]
-         * may be lower.
+         * The amount of [InstinctNetwork]s in a single batch. Batches are evaluated and breded in parallel, therefore
+         * the used [Environment] during [evaluation][evaluateFitness] needs to be thread safe.
          */
-        var threads: Int? = null
+        var batchSize: Int? = null
 
         /**
          * This many best performing networks will be in the next generation without any changes.
@@ -287,12 +325,11 @@ class InstinctPool @JvmOverloads constructor(
         fun populationSize(value: Int?) = apply { populationSize = value }
 
         /**
-         * Changes the amount of computational threads to be used. The actual amount of used threads during
-         * training may be lower.
+         * Changes the amount of Networks in a single batch. Batches are evaluated and breded in parallel.
          *
          * Returns this [Builder] to allow chaining.
          */
-        fun threads(value: Int?) = apply { threads = value }
+        fun batchSize(value: Int?) = apply { batchSize = value }
 
         /**
          * Changes how many best performing networks will be in the next generation without any changes.
@@ -340,15 +377,6 @@ class InstinctPool @JvmOverloads constructor(
         fun select(value: SelectionFunction?) = apply { select = value }
 
         /**
-         * Activates or deactivates [parallelization][value]. If activated, [threads] is set to amount of system
-         * available logical threads.
-         *
-         * Returns this [Builder] to allow chaining.
-         */
-        fun parallelization(value: Boolean) =
-            apply { threads = if (value) Runtime.getRuntime().availableProcessors() else 1 }
-
-        /**
          * Sets the [growth][value] for [nodesGrowth], [connectionsGrowth] and [gatesGrowth] at once.
          *
          * Returns this [Builder] to allow chaining.
@@ -365,7 +393,7 @@ class InstinctPool @JvmOverloads constructor(
          * have the default values defined in the InstinctPool constructor.
          */
         fun build(): InstinctPool {
-            val constructor = InstinctPool::class.primaryConstructor!!
+            val constructor = InstinctPool::class.constructors.first()
             val values = InstinctPoolBuilder::class.declaredMemberProperties
             val valueMap = constructor.valueParameters.associateWith { parameter ->
                 values.firstOrNull { it.name == parameter.name }?.get(this)

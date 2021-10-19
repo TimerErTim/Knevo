@@ -39,7 +39,7 @@ fun runWith(addressBits: Int): InstinctNetwork {
 
     val pool = InstinctPoolBuilder()
         .populationSize(400)
-        .parallelization(true)
+        .batchSize(40)
         .growth(0.005F)
         .select(Tournament(10))
         .build()

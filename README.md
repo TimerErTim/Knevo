@@ -12,7 +12,7 @@ https://img.shields.io/github/workflow/status/TimerErTim/Knevo/Check%20and%20Pub
 ![Sonatype Nexus (Releases)](
 https://img.shields.io/nexus/r/eu.timerertim.knevo/knevo?server=https%3A%2F%2Fs01.oss.sonatype.org&style=flat-square
 )
-]()
+](https://search.maven.org/artifact/eu.timerertim.knevo/knevo)
 ![Maintenance](https://img.shields.io/maintenance/yes/2021?style=flat-square)
 
 A neuroevolution library for Java and Kotlin written purely in Kotlin, featuring multiple neuroevolution algorithms,
@@ -36,20 +36,20 @@ Maven
         <dependency>
             <groupId>eu.timerertim.knevo</groupId>
             <artifactId>knevo</artifactId>
-            <version>0.1.0-alpha</version>
+            <version>0.1.0-BETA</version>
         </dependency>
     </dependencies>
 
 Gradle Groovy
 
 	dependencies {
-	        implementation 'eu.timerertim.knevo:knevo:0.1.0-alpha'
+	        implementation 'eu.timerertim.knevo:knevo:0.1.0-BETA'
 	}
 
 Gradle KTS
 
 	dependencies {
-	        implementation("eu.timerertim.knevo:knevo:0.1.0-alpha")
+	        implementation("eu.timerertim.knevo:knevo:0.1.0-BETA")
 	}
 
 ## Content
@@ -106,7 +106,7 @@ You can use individual `Networks` like above. However, you typically want to mak
         select = Tournament(10)
     )
 
-You can use this and some environment to write a trainings loop.
+You can use this and some environment to write a training loop.
 
     do {
         pool.evolve(environment)
@@ -118,12 +118,12 @@ Finally, the trained `Genome` can be retrieved.
 
 ### Coroutines
 
-This library supports multithreading by using Coroutines. This behavior can be configured on every
-`Population`.
+This library supports multithreading by using Coroutines. `Populations` are separated into batches, which are processed
+in parallel. This behavior can be configured on every `Population`.
 
     val pool = PoolBuilder()
         .populationSize(200)
-        .parallelization(true)
+        .batchSize(50)
         .build()
 
 Note that when using this feature, the `Environment` has to be thread safe as multiple `Genomes` are evaluated in

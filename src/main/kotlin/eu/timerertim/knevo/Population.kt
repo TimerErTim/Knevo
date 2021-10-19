@@ -24,7 +24,7 @@ interface Population<out G : Genome> : Collection<G>, Serializable {
     /**
      * This number keeps track of the current [generation]. It normally is increased upon invoking [breedNewGeneration].
      */
-    var generation: Long // TODO: Make val and add var in inheritors
+    val generation: Long
 
 
     /**

@@ -24,7 +24,7 @@ fun main() {
 
     val pool = InstinctPoolBuilder()
         .populationSize(400)
-        .parallelization(true)
+        .batchSize(40)
         .growth(0.05F)
         .build()
 

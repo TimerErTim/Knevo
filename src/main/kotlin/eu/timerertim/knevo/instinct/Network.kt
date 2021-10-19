@@ -488,7 +488,8 @@ class InstinctNetwork @JvmOverloads constructor(val instance: InstinctInstance =
         activation: ActivationFunction = instance.hiddenActivations.random()
     ) : Node(bias, activation) {
         init {
-            nodes.add(min(index, nodes.size - instance.outputs), this)
+            val cappedIndex = max(min(index, nodes.size - instance.outputs), instance.inputs)
+            nodes.add(cappedIndex, this)
         }
     }
 

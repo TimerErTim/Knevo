@@ -22,7 +22,6 @@ import java.io.InvalidClassException
 import java.io.ObjectInputStream
 import java.io.OptionalDataException
 import java.io.StreamCorruptedException
-import java.util.concurrent.ConcurrentHashMap
 import kotlin.random.Random
 import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.full.valueParameters
@@ -104,9 +103,10 @@ class InstinctPool private constructor(
 ) : Population<InstinctNetwork>, List<InstinctNetwork> by pool {
 
     /**
-     * A pretty generic, simple [Population] implementation used with the algorithm described in [InstinctInstance]. It does
-     * not feature speciation, but multithreading, different [SelectionFunction]s and size penalties for the
-     * [InstinctNetwork]s. The [instance][InstinctPool.instance] is used for all operations requiring an InstinctInstance.
+     * A pretty generic, simple [Population] implementation used with the algorithm described in [InstinctInstance]. It
+     * does not feature speciation, but multithreading, different [SelectionFunction]s and size penalties for the
+     * [InstinctNetwork]s. The [instance][InstinctPool.instance] is used for all operations requiring an
+     * InstinctInstance.
      *
      * Configurable Parameters:
      * - [populationSize]: The amount of Networks in this Population
@@ -224,7 +224,6 @@ class InstinctPool private constructor(
 
     companion object {
         private const val serialVersionUID = 0L
-        private val poolMap = ConcurrentHashMap<Int, MutableList<InstinctNetwork>>()
 
         /**
          * Loads a [InstinctPool] from the given [input]. Can throw [ClassNotFoundException], [InvalidClassException],

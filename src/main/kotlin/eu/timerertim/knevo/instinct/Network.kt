@@ -228,19 +228,19 @@ class InstinctNetwork @JvmOverloads constructor(val instance: InstinctInstance =
      * "remembering" the node's [state][Node.state] between multiple [invoke] calls.
      */
     fun mutateAddSelfConnection() {
-        val pairs = mutableListOf<Pair<InstinctNode, InstinctNode>>()
+        val candidates = mutableListOf<InstinctNode>()
 
-        for (from in nodes.drop(instance.inputs)) {
-            if (from.incomingConnections.none { it.from == from }) {
-                pairs += from to from
+        for (node in nodes.drop(instance.inputs)) {
+            if (node.selfConnection == null) {
+                candidates += node
             }
         }
 
-        if (pairs.isEmpty()) return
+        if (candidates.isEmpty()) return
 
-        val pair = pairs.random()
+        val target = candidates.random()
 
-        Connection(pair.first, pair.second, Random.nextFloat() * 2 - 1)
+        Connection(target, target, Random.nextFloat() * 2 - 1)
     }
 
     /**

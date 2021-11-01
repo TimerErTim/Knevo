@@ -32,25 +32,31 @@ From Maven Central:
 
 Maven
 
-	<dependencies>
-        <dependency>
-            <groupId>eu.timerertim.knevo</groupId>
-            <artifactId>knevo</artifactId>
-            <version>0.1.0-RC2</version>
-        </dependency>
-    </dependencies>
+```xml
+<dependencies>
+    <dependency>
+        <groupId>eu.timerertim.knevo</groupId>
+        <artifactId>knevo</artifactId>
+        <version>0.1.0-RC2</version>
+    </dependency>
+</dependencies>
+```
 
 Gradle Groovy
 
-	dependencies {
-	        implementation 'eu.timerertim.knevo:knevo:0.1.0-RC2'
-	}
+```groovy
+dependencies {
+    implementation 'eu.timerertim.knevo:knevo:0.1.0-RC2'
+}
+```
 
 Gradle KTS
 
-	dependencies {
-	        implementation("eu.timerertim.knevo:knevo:0.1.0-RC2")
-	}
+```kotlin
+dependencies {
+    implementation("eu.timerertim.knevo:knevo:0.1.0-RC2")
+}
+```
 
 ## Content
 
@@ -79,53 +85,68 @@ For each `Genome` in the population, you want to set its fitness.
 
 Everything requires an Instance. It is the interface to an algorithm implementation.
 
-    val instance = InstinctInstanceBuilder(2, 1)
-        .mutateAddSelfConnectionChance(0F)
-        .mutateAddRecurrentConnectionChance(0F)
-        .mutateRemoveConnectionChance(2.15F)
-        .hiddenActivations(Sigmoid(), Tanh(), Step(), Sign(), Linear(), Sinus(), Relu(), Selu(), Silu())
-        .outputActivations(Sign())
-        .build()
+```kotlin
+val instance = InstinctInstanceBuilder(2, 1)
+    .mutateAddSelfConnectionChance(0F)
+    .mutateAddRecurrentConnectionChance(0F)
+    .mutateRemoveConnectionChance(2.15F)
+    .hiddenActivations(Sigmoid(), Tanh(), Step(), Sign(), Linear(), Sinus(), Relu(), Selu(), Silu())
+    .outputActivations(Sign())
+    .build()
+```
 
-    val network = instance.Network()
-    println(network(floatArrayOf(0F, 1F)))
+```kotlin
+val network = instance.Network()
+println(network(floatArrayOf(0F, 1F)))
+```
 
 The Instance can be set globally, so you don't have to explicitly specify the Instance everytime.
 
-    globalInstinctInstance = InstinctInstance(2, 1)
+```kotlin
+globalInstinctInstance = InstinctInstance(2, 1)
+```
 
-    val network = Network()
-    println(network(floatArrayOf(0F, 1F)))
+```kotlin
+val network = Network()
+println(network(floatArrayOf(0F, 1F)))
+```
 
 ### Training
 
 You can use individual `Networks` like above. However, you typically want to make use of a bigger population.
 
-    val pool = Pool(
-        populationSize = 500,
-        select = Tournament(10)
-    )
+```kotlin
+val pool = Pool(
+    populationSize = 500,
+    select = Tournament(10)
+)
+```
 
 You can use this and some environment to write a training loop.
 
-    do {
-        pool.evolve(environment)
-    } while(pool.topFitness < 100)
+```kotlin
+do {
+    pool.evolve(environment)
+} while(pool.topFitness < 100)
+```
 
 Finally, the trained `Genome` can be retrieved.
 
-    val network = pool.topGenome
+```kotlin
+val network = pool.topGenome
+```
 
 ### Coroutines
 
 This library supports multithreading by using Coroutines. `Populations` are separated into batches, which are processed
 in parallel. This behavior can be configured on every `Population`.
 
-    val pool = PoolBuilder()
-        .populationSize(200)
-        .batchSize(50)
-        .build()
-
+```kotlin
+val pool = PoolBuilder()
+    .populationSize(200)
+    .batchSize(50)
+    .build()
+```
 Note that when using this feature, the `Environment` has to be thread safe as multiple `Genomes` are evaluated in
 parallel.
 
@@ -133,11 +154,15 @@ parallel.
 
 You can easily save any `Network` or `Pool`:
 
-    network.save("out/my_trained_network.knv")
+```kotlin
+network.save("out/my_trained_network.knv")
+```
 
 And load it as easily:
 
-    val network = InstinctNetwork.load("out/my_trained_network.knv") ?: Network()
+```kotlin
+val network = InstinctNetwork.load("out/my_trained_network.knv") ?: Network()
+```
 
 Because the load function returns null if the specified file does not yet exist, you can easily define an
 initiative `Network` or `Pool`.

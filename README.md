@@ -5,9 +5,9 @@
 ](https://github.com/TimerErTim/Knevo/blob/master/LICENSE)
 [
 ![GitHub Workflow Status](
-https://img.shields.io/github/workflow/status/TimerErTim/Knevo/Check%20and%20Publish?style=flat-square
+https://img.shields.io/github/workflow/status/TimerErTim/Knevo/Check?style=flat-square
 )
-](https://github.com/TimerErTim/Knevo/actions/workflows/push-publish.yml)
+](https://github.com/TimerErTim/Knevo/actions/workflows/check.yml)
 [
 ![Sonatype Nexus (Releases)](
 https://img.shields.io/nexus/r/eu.timerertim.knevo/knevo?server=https%3A%2F%2Fs01.oss.sonatype.org&style=flat-square

@@ -459,6 +459,14 @@ class InstinctNetwork @JvmOverloads constructor(val instance: InstinctInstance =
             result = 31 * result + toIndex
             return result
         }
+
+        private fun readObject(stream: ObjectInputStream) {
+            stream.defaultReadObject()
+            if (to != from) {
+                to.incomingConnections += this
+                from.outgoingConnections += this
+            }
+        }
     }
 
     private inner class InputNode(
@@ -509,12 +517,16 @@ class InstinctNetwork @JvmOverloads constructor(val instance: InstinctInstance =
         /**
          * A list of all incoming [Connection]s.
          */
-        val incomingConnections = mutableListOf<InstinctConnection>()
+        @Transient
+        var incomingConnections = mutableListOf<InstinctConnection>()
+            private set
 
         /**
          * A list of all outgoing [Connection]s.
          */
-        val outgoingConnections = mutableListOf<InstinctConnection>()
+        @Transient
+        var outgoingConnections = mutableListOf<InstinctConnection>()
+            private set
 
         /**
          * The index of this [Node].
@@ -531,10 +543,16 @@ class InstinctNetwork @JvmOverloads constructor(val instance: InstinctInstance =
          * [state].
          */
         var value: Float = 0F
+
+        private fun readObject(stream: ObjectInputStream) {
+            stream.defaultReadObject()
+            incomingConnections = mutableListOf()
+            outgoingConnections = mutableListOf()
+        }
     }
 
     companion object {
-        private const val serialVersionUID = 0L
+        private const val serialVersionUID = 1L
 
         /**
          * Performs a [crossover] between two [InstinctNetwork]s and [mutate]s the result before returning it. An

@@ -1,19 +1,6 @@
 package eu.timerertim.knevo
 
-import java.io.FileInputStream
-import java.io.FileNotFoundException
-import java.io.FileOutputStream
-import java.io.IOException
-import java.io.InputStream
-import java.io.InvalidClassException
-import java.io.NotSerializableException
-import java.io.ObjectInputStream
-import java.io.ObjectOutputStream
-import java.io.OptionalDataException
-import java.io.OutputStream
 import java.io.Serializable
-import java.io.StreamCorruptedException
-import kotlin.reflect.jvm.jvmName
 
 /**
  * A [Population] is a [Collection] of [Genome]s. It can be used to train and evolve Genomes. For this one should invoke
@@ -62,56 +49,4 @@ interface Population<out G : Genome> : Collection<G>, Serializable {
      * Breeds a new generation based on the [evaluated Fitness][evaluateFitness]. Typically, increases [generation].
      */
     fun breedNewGeneration()
-
-    // Serialization
-    /**
-     * Saves this [Genome] to the given [output]. Can throw [InvalidClassException], [NotSerializableException],
-     * [IOException].
-     */
-    @Throws(InvalidClassException::class, NotSerializableException::class, IOException::class)
-    fun save(output: OutputStream) = ObjectOutputStream(output).writeObject(this)
-
-    /**
-     * Saves this [Genome] to the given [path]. Can throw [InvalidClassException], [NotSerializableException],
-     * [IOException].
-     */
-    @Throws(InvalidClassException::class, NotSerializableException::class, IOException::class)
-    fun save(path: String) = save(FileOutputStream(path))
-
-    companion object {
-        /**
-         * Loads a [Population] from the given [input]. Can throw [ClassNotFoundException], [InvalidClassException],
-         * [StreamCorruptedException], [OptionalDataException], [IOException].
-         */
-        @JvmStatic
-        @Throws(
-            ClassNotFoundException::class, InvalidClassException::class, StreamCorruptedException::class,
-            OptionalDataException::class, IOException::class
-        )
-        fun load(input: InputStream): Population<*> {
-            val population = ObjectInputStream(input).readObject()
-            if (population !is Population<*>) {
-                throw InvalidClassException("Cannot load object of type \"${population::class.jvmName}\" as Population")
-            }
-            return population
-        }
-
-        /**
-         * Loads a [Population] from the given [path]. Can throw [ClassNotFoundException], [InvalidClassException],
-         * [StreamCorruptedException], [OptionalDataException], [IOException].
-         */
-        @JvmStatic
-        @Throws(
-            ClassNotFoundException::class, InvalidClassException::class, StreamCorruptedException::class,
-            OptionalDataException::class, IOException::class
-        )
-        @Suppress("SwallowedException")
-        fun load(path: String): Population<*>? {
-            return try {
-                load(FileInputStream(path))
-            } catch (ex: FileNotFoundException) {
-                null
-            }
-        }
-    }
 }

@@ -5,20 +5,12 @@ package eu.timerertim.knevo.instinct
 
 import eu.timerertim.knevo.Genome
 import eu.timerertim.knevo.activation.ActivationFunction
-import java.io.FileInputStream
-import java.io.FileNotFoundException
-import java.io.IOException
-import java.io.InputStream
-import java.io.InvalidClassException
 import java.io.ObjectInputStream
-import java.io.OptionalDataException
 import java.io.Serializable
-import java.io.StreamCorruptedException
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sqrt
 import kotlin.random.Random
-import kotlin.reflect.jvm.jvmName
 
 typealias Network = InstinctNetwork
 typealias InstinctConnection = InstinctNetwork.Connection
@@ -646,43 +638,6 @@ class InstinctNetwork @JvmOverloads constructor(val instance: InstinctInstance =
             }
 
             return child
-        }
-
-        /**
-         * Loads an [InstinctNetwork] from the given [input]. Can throw [ClassNotFoundException],
-         * [InvalidClassException], [StreamCorruptedException], [OptionalDataException], [IOException].
-         */
-        @JvmStatic
-        @Throws(
-            ClassNotFoundException::class, InvalidClassException::class, StreamCorruptedException::class,
-            OptionalDataException::class, IOException::class
-        )
-        fun load(input: InputStream): InstinctNetwork {
-            val genome = ObjectInputStream(input).readObject()
-            if (genome !is InstinctNetwork) {
-                throw InvalidClassException(
-                    "Cannot load object of type \"${genome::class.jvmName}\" as InstinctNetwork"
-                )
-            }
-            return genome
-        }
-
-        /**
-         * Loads an [InstinctNetwork] from the given [path]. Can throw [ClassNotFoundException],
-         * [InvalidClassException], [StreamCorruptedException], [OptionalDataException], [IOException].
-         */
-        @JvmStatic
-        @Throws(
-            ClassNotFoundException::class, InvalidClassException::class, StreamCorruptedException::class,
-            OptionalDataException::class, IOException::class
-        )
-        @Suppress("SwallowedException")
-        fun load(path: String): InstinctNetwork? {
-            return try {
-                load(FileInputStream(path))
-            } catch (ex: FileNotFoundException) {
-                null
-            }
         }
     }
 }

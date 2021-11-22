@@ -8,6 +8,7 @@ import eu.timerertim.knevo.activation.Tanh
 import eu.timerertim.knevo.instinct.InstinctInstanceBuilder
 import eu.timerertim.knevo.instinct.InstinctPoolBuilder
 import eu.timerertim.knevo.instinct.globalInstinctInstance
+import eu.timerertim.knevo.serialization.save
 import eu.timerertim.knevo.shared.xor.XOREnvironment
 import java.io.File
 

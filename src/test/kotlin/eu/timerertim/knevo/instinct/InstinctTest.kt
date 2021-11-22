@@ -3,6 +3,8 @@ package eu.timerertim.knevo.instinct
 import eu.timerertim.knevo.activation.Identity
 import eu.timerertim.knevo.instinct.InstinctNetwork.Companion.crossover
 import eu.timerertim.knevo.instinct.InstinctNetwork.Companion.offspring
+import eu.timerertim.knevo.serialization.load
+import eu.timerertim.knevo.serialization.save
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -30,7 +32,7 @@ class InstinctTest {
 
         assertDoesNotThrow {
             network.save("out${File.separator}instinct_serialization.knv")
-            val loadedNetwork = Network.load("out${File.separator}instinct_serialization.knv")
+            val loadedNetwork = load<Network>("out${File.separator}instinct_serialization.knv")
             assertNotNull(loadedNetwork)
             loadedNetwork ?: exitProcess(-1)
             assertEquals(network.connections, loadedNetwork.connections)

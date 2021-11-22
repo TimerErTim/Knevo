@@ -14,18 +14,9 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import java.io.FileInputStream
-import java.io.FileNotFoundException
-import java.io.IOException
-import java.io.InputStream
-import java.io.InvalidClassException
-import java.io.ObjectInputStream
-import java.io.OptionalDataException
-import java.io.StreamCorruptedException
 import kotlin.random.Random
 import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.full.valueParameters
-import kotlin.reflect.jvm.jvmName
 
 typealias Pool = InstinctPool
 typealias PoolBuilder = InstinctPool.Builder
@@ -224,43 +215,6 @@ class InstinctPool private constructor(
 
     companion object {
         private const val serialVersionUID = 0L
-
-        /**
-         * Loads a [InstinctPool] from the given [input]. Can throw [ClassNotFoundException], [InvalidClassException],
-         * [StreamCorruptedException], [OptionalDataException], [IOException].
-         */
-        @JvmStatic
-        @Throws(
-            ClassNotFoundException::class, InvalidClassException::class, StreamCorruptedException::class,
-            OptionalDataException::class, IOException::class
-        )
-        fun load(input: InputStream): InstinctPool {
-            val population = ObjectInputStream(input).readObject()
-            if (population !is InstinctPool) {
-                throw InvalidClassException(
-                    "Cannot load object of type \"${population::class.jvmName}\" as InstinctPool"
-                )
-            }
-            return population
-        }
-
-        /**
-         * Loads a [InstinctPool] from the given [path]. Can throw [ClassNotFoundException], [InvalidClassException],
-         * [StreamCorruptedException], [OptionalDataException], [IOException].
-         */
-        @JvmStatic
-        @Throws(
-            ClassNotFoundException::class, InvalidClassException::class, StreamCorruptedException::class,
-            OptionalDataException::class, IOException::class
-        )
-        @Suppress("SwallowedException")
-        fun load(path: String): InstinctPool? {
-            return try {
-                load(FileInputStream(path))
-            } catch (ex: FileNotFoundException) {
-                null
-            }
-        }
     }
 
     /**

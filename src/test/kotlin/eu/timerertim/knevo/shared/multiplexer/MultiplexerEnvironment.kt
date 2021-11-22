@@ -4,7 +4,7 @@ import eu.timerertim.knevo.Environment
 import eu.timerertim.knevo.Genome
 
 class MultiplexerEnvironment(private val multiplexer: Multiplexer) : Environment<Genome> {
-    override fun evaluateFitness(population: List<Genome>) {
+    override suspend fun evaluateFitness(population: List<Genome>) {
         for (gene in population) {
             var fitness = 0f
 

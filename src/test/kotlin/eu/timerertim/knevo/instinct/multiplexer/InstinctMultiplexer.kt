@@ -14,6 +14,7 @@ import eu.timerertim.knevo.instinct.InstinctNetwork
 import eu.timerertim.knevo.instinct.InstinctPoolBuilder
 import eu.timerertim.knevo.instinct.globalInstinctInstance
 import eu.timerertim.knevo.selection.Tournament
+import eu.timerertim.knevo.serialization.save
 import eu.timerertim.knevo.shared.multiplexer.Multiplexer
 import eu.timerertim.knevo.shared.multiplexer.MultiplexerEnvironment
 import java.io.File

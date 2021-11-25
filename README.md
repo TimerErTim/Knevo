@@ -161,7 +161,7 @@ network.save("out/my_trained_network.knv")
 And load it as easily:
 
 ```kotlin
-val network = InstinctNetwork.load("out/my_trained_network.knv") ?: Network()
+val network: InstinctNetwork = load("out/my_trained_network.knv") ?: Network()
 ```
 
 Because the load function returns null if the specified file does not yet exist, you can easily define an
@@ -175,6 +175,6 @@ Knevo is licensed under the [MIT License](LICENSE).
 
 I, the project owner, am currently attending
 the [higher technical college of Grieskirchen](https://github.com/HTBLA-Grieskirchen). My education takes me about as
-much time as a full time job, not counting homework and similar tasks. Because of this, the development pace is not as
-fast as one may expect. Nonetheless, I like to extend this library as demanded. Just be aware that development might be
-or become a little slow.
+much time as a full time job, not counting homework and similar tasks. In addition, I also have a part-time job. Because
+of this, the development pace is not as fast as one may expect. Nonetheless, I like to extend this library as demanded.
+Just be aware that development might be or become a little slow.

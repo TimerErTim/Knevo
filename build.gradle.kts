@@ -1,8 +1,8 @@
 plugins {
     `java-library`
 
-    kotlin("jvm") version "1.5.30"
-    id("org.jetbrains.dokka") version "1.5.30"
+    kotlin("jvm") version "1.6.0"
+    id("org.jetbrains.dokka") version "1.6.0"
 
     `maven-publish`
     signing
@@ -18,7 +18,7 @@ repositories {
 dependencies {
     implementation(kotlin("stdlib"))
     implementation(kotlin("reflect"))
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0-RC")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.1")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.1")

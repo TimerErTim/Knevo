@@ -29,6 +29,12 @@ Note that this is a full changelog. Changelog relative to the last pre-release c
 
 - Upgraded Kotlin to version `1.6.0` from `1.5.30`.
 - Serialization: Saving and Loading are now extensions functions of Serializable objects instead of member functions.
+- Environment `evaluateFitness` function is now a suspending function.
+
+### Fixed
+
+- Bug which allowed dead nodes and thus the removal of required connections in
+  [Instinct](https://towardsdatascience.com/neuro-evolution-on-steroids-82bd14ddc2f6) networks.
 
 ## [0.1.0-RC2] - 2021-10-21
 

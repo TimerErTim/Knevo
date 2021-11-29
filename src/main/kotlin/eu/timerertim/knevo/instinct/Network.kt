@@ -29,8 +29,7 @@ fun InstinctInstance.Network() = InstinctNetwork(this)
  * and [nodes]. The [instance] used to create this network determines its mutation chances, possible
  * [ActivationFunction]s and [input][InstinctInstance.inputs] and [output][InstinctInstance.outputs] size.
  */
-class InstinctNetwork @JvmOverloads constructor(val instance: InstinctInstance = globalInstinctInstance) :
-    Genome {
+class InstinctNetwork @JvmOverloads constructor(val instance: InstinctInstance = globalInstinctInstance) : Genome {
     /**
      * Create a new [InstinctNetwork] which is [base]d on the given one (creates basically a copy). The [instance] is
      * inferred from the given network.
@@ -192,7 +191,7 @@ class InstinctNetwork @JvmOverloads constructor(val instance: InstinctInstance =
 
         listOf(connection1, connection2).random().gater = gater
 
-        connections.remove(connection)
+        connections -= connection
     }
 
     /**
@@ -314,7 +313,7 @@ class InstinctNetwork @JvmOverloads constructor(val instance: InstinctInstance =
         val newConnections = mutableListOf<InstinctConnection>()
         for (from in sourceNodes) {
             for (to in targetNodes) {
-                if (from.outgoingConnections.none { it.to == to }) {
+                if (if (from == to) from.selfConnection == null else from.outgoingConnections.none { it.to == to }) {
                     newConnections += Connection(from, to, Random.nextFloat() * 2 - 1)
                 }
             }
@@ -336,8 +335,11 @@ class InstinctNetwork @JvmOverloads constructor(val instance: InstinctInstance =
      */
     fun mutateRemoveConnection() {
         val connection = connections
-            .filter { it.from.outgoingConnections.size > 1 && it.to.incomingConnections.size > 1 }.randomOrNull()
-            ?: return
+            .filter {
+                (it.from.outgoingConnections.filter { connection ->
+                    connection.type > 0
+                }.size > 1 || it.type < 0) && it.to.incomingConnections.size > 1 || it.type == 0
+            }.randomOrNull() ?: return
         connections -= connection
     }
 
@@ -423,6 +425,15 @@ class InstinctNetwork @JvmOverloads constructor(val instance: InstinctInstance =
             set(value) {
                 gater = nodes.getOrNull(value)
             }
+
+        /**
+         * The [type] of an [InstinctConnection] is just the initial difference of the [fromIndex] and [toIndex]. It can
+         * be used to determine if the connection is recurrent, forward or a self-connection.
+         * - Forward: value > 0
+         * - Self: value = 0
+         * - Recurrent: value < 0
+         */
+        val type = toIndex - fromIndex
 
         init {
             connections += this
@@ -544,7 +555,7 @@ class InstinctNetwork @JvmOverloads constructor(val instance: InstinctInstance =
     }
 
     companion object {
-        private const val serialVersionUID = 1L
+        private const val serialVersionUID = 2L
 
         /**
          * Performs a [crossover] between two [InstinctNetwork]s and [mutate]s the result before returning it. An

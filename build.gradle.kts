@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "eu.timerertim.knevo"
-version = "0.1.0-RC2"
+version = "0.2.0-RC"
 
 repositories {
     mavenCentral()

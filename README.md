@@ -37,7 +37,7 @@ Maven
     <dependency>
         <groupId>eu.timerertim.knevo</groupId>
         <artifactId>knevo</artifactId>
-        <version>0.1.0-RC2</version>
+        <version>0.2.0-RC</version>
     </dependency>
 </dependencies>
 ```
@@ -46,7 +46,7 @@ Gradle Groovy
 
 ```groovy
 dependencies {
-    implementation 'eu.timerertim.knevo:knevo:0.1.0-RC2'
+    implementation 'eu.timerertim.knevo:knevo:0.2.0-RC'
 }
 ```
 
@@ -54,7 +54,7 @@ Gradle KTS
 
 ```kotlin
 dependencies {
-    implementation("eu.timerertim.knevo:knevo:0.1.0-RC2")
+    implementation("eu.timerertim.knevo:knevo:0.2.0-RC")
 }
 ```
 

@@ -463,6 +463,7 @@ class InstinctNetwork @JvmOverloads constructor(val instance: InstinctInstance =
             return result
         }
 
+        @Suppress("UnusedPrivateMember")
         private fun readObject(stream: ObjectInputStream) {
             stream.defaultReadObject()
             if (to != from) {
@@ -547,6 +548,7 @@ class InstinctNetwork @JvmOverloads constructor(val instance: InstinctInstance =
          */
         var value: Float = 0F
 
+        @Suppress("UnusedPrivateMember")
         private fun readObject(stream: ObjectInputStream) {
             stream.defaultReadObject()
             incomingConnections = mutableListOf()

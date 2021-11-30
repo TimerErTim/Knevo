@@ -18,6 +18,21 @@ Note that this is a full changelog. Changelog relative to the last pre-release c
 - Fitness function interface.
 - Checkpoint manager.
 
+### Relative to [0.2.0-RC](https://github.com/TimerErTim/Knevo/releases/tag/v0.2.0-RC)
+
+## [0.2.0-RC] - 2021-11-30
+
+Note that this is a full changelog. Changelog relative to the last pre-release can be found in the end.
+
+### Added
+
+- Activation function: Sigmoid, Tanh, Sinus, Step, Sign, Random, ReLU, SeLU, SiLU, Linear.
+- Selection functions: Power, Tournament, Fitness Proportionate.
+- [Instinct](https://towardsdatascience.com/neuro-evolution-on-steroids-82bd14ddc2f6) neuroevolution algorithm.
+- Environment interface.
+- Fitness function interface.
+- Checkpoint manager.
+
 ### Relative to [0.1.0-RC2](https://github.com/TimerErTim/Knevo/releases/tag/v0.1.0-RC2)
 
 #### Added
@@ -80,6 +95,8 @@ Note that this is a full changelog. Changelog relative to the last pre-release c
 - Environment interface.
 
 [Unreleased]: https://github.com/TimerErTim/Knevo/commits/HEAD
+
+[0.2.0-RC]: https://github.com/TimerErTim/Knevo/releases/tag/v0.2.0-RC
 
 [0.1.0-RC2]: https://github.com/TimerErTim/Knevo/releases/tag/v0.1.0-RC2
 

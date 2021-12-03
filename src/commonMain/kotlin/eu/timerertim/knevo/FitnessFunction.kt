@@ -1,5 +1,8 @@
 package eu.timerertim.knevo
 
+import kotlin.jvm.JvmName
+import kotlin.jvm.JvmStatic
+
 /**
  * [FitnessFunction]s determine the [fitness][Genome.fitness] of a given [Genome]. It can be used like an [Environment]
  * for training.

@@ -1,7 +1,6 @@
 plugins {
-    `java-library`
-
-    kotlin("jvm") version "1.6.0"
+    kotlin("multiplatform") version "1.6.0"
+    kotlin("plugin.serialization") version "1.6.0"
     id("org.jetbrains.dokka") version "1.6.0"
 
     `maven-publish`
@@ -15,21 +14,40 @@ repositories {
     mavenCentral()
 }
 
-dependencies {
-    implementation(kotlin("stdlib"))
-    implementation(kotlin("reflect"))
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0-RC")
+kotlin {
+    jvm {
+        withJava()
+    }
+    js(BOTH) {
+        nodejs()
+        browser()
+    }
+    wasm32()
+    ios()
+    watchos()
+    tvos()
+    linuxX64()
+    macosX64()
+    macosArm64()
+    mingwX64()
+    mingwX86()
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.1")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.1")
-}
+    sourceSets {
+        val commonMain by getting {
+            dependencies {
+                implementation(kotlin("stdlib"))
+                implementation(kotlin("reflect"))
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0-RC")
+                api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.1")
+            }
+        }
 
-tasks.test {
-    useJUnitPlatform()
-}
-
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    kotlinOptions.jvmTarget = "11"
+        val commonTest by getting {
+            dependencies {
+                implementation(kotlin("test"))
+            }
+        }
+    }
 }
 
 val GPG_SIGNING_KEY: String? by project
@@ -39,12 +57,6 @@ val MAVEN_UPLOAD_USER: String? by project
 val MAVEN_UPLOAD_PWD: String? by project
 
 tasks {
-    register("sourcesJar", Jar::class) {
-        dependsOn(JavaPlugin.CLASSES_TASK_NAME)
-        archiveClassifier.set("sources")
-        from(sourceSets["main"].allSource)
-    }
-
     register("javadocJar", Jar::class) {
         dependsOn("dokkaJavadoc")
         archiveClassifier.set("javadoc")
@@ -55,7 +67,7 @@ tasks {
 publishing {
     repositories {
         maven {
-            name = "MavenCentral"
+            name = "Sonatype"
             val releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2"
             val snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots"
             url = uri(if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl)
@@ -66,9 +78,7 @@ publishing {
         }
     }
     publications {
-        create<MavenPublication>("core") {
-            from(components["java"])
-            artifact(tasks["sourcesJar"])
+        withType<MavenPublication> {
             artifact(tasks["javadocJar"])
 
             pom {
@@ -77,7 +87,7 @@ publishing {
                     "Kotlin (and Java) Neuroevolution library featuring multiple algorithms, coroutines " +
                             "and serialization"
                 )
-                url.set("knevo.timerertim.eu")
+                url.set("https://github.com/TimerErTim/Knevo")
                 licenses {
                     license {
                         name.set("MIT License")
@@ -103,5 +113,5 @@ publishing {
 
 signing {
     useInMemoryPgpKeys(GPG_SIGNING_KEY, GPG_SIGNING_PASSWORD)
-    sign(publishing.publications["core"])
+    sign(publishing.publications)
 }

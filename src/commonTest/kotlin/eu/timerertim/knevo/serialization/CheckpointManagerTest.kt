@@ -1,22 +1,16 @@
 package eu.timerertim.knevo.serialization
 
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.TestInstance.Lifecycle
-import java.io.File
-import java.io.File.separator
 import kotlin.random.Random
+import com.soywiz.korio.file.std.applicationVfs
+import kotlin.test.AfterTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
-@TestInstance(Lifecycle.PER_CLASS)
 class CheckpointManagerTest {
-    @AfterAll
-    @BeforeAll
-    fun `Remove files`() {
-        File("out").deleteRecursively()
+    @AfterTest
+    suspend fun `Remove files`() {
+        applicationVfs["out"].delete()
     }
 
     @Test

@@ -81,7 +81,7 @@ fun InstinctInstance.Pool(
  * - [select]: The SelectionFunction used by default when [breedNewGeneration][InstinctPool.breedNewGeneration] is
  * invoked
  */
-class InstinctPool private constructor(
+open class InstinctPool private constructor(
     val batchSize: Int,
     val elitism: Int,
     val crossoverChance: Float,
@@ -90,7 +90,7 @@ class InstinctPool private constructor(
     val gatesGrowth: Float,
     val select: SelectionFunction,
     val instance: InstinctInstance,
-    private val pool: MutableList<InstinctNetwork>
+    protected val pool: MutableList<InstinctNetwork>
 ) : Population<InstinctNetwork>, List<InstinctNetwork> by pool {
 
     /**
@@ -149,7 +149,7 @@ class InstinctPool private constructor(
         breedNewGeneration(select)
     }
 
-    override fun evaluateFitness(environment: Environment<InstinctNetwork>) {
+    override open fun evaluateFitness(environment: Environment<InstinctNetwork>) {
         runBlocking(Dispatchers.Default) {
             pool.chunked(batchSize)
                 .map { batch ->
@@ -169,13 +169,13 @@ class InstinctPool private constructor(
      * Breeds a new generation based on the [evaluated Fitness][evaluateFitness]. It uses
      * the configured [select] method when selecting [InstinctNetwork]s during breeding. It increases [generation].
      */
-    override fun breedNewGeneration() = breedNewGeneration(select)
+    override open fun breedNewGeneration() = breedNewGeneration(select)
 
     /**
      * Breeds a new generation based on the [evaluated Fitness][evaluateFitness]. It uses
      * the given [select] method when selecting [InstinctNetwork]s during breeding. It increases [generation].
      */
-    fun breedNewGeneration(select: SelectionFunction) {
+    open fun breedNewGeneration(select: SelectionFunction) {
         pool.sortDescending()
         if (select is FitnessProportionate) select.reset()
 

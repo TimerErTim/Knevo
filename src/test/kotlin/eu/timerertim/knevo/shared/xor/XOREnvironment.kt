@@ -14,6 +14,7 @@ class XOREnvironment : FitnessFunction<Genome> {
                 val expected = i xor j
                 fitness += (expected - output[0]) * (expected - output[0])
             }
+        genome.doReset = true
         return 1 - fitness
     }
 }

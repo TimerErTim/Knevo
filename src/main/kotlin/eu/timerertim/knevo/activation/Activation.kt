@@ -181,6 +181,14 @@ data class Linear @JvmOverloads constructor(private val gradient: Float = 1F) : 
 }
 
 /**
+ * The [Modulo] [] [ActivationFunction] divides the input with the [divisor] (defaults to 1) and returns the
+ * remainder.
+ */
+data class Modulo @JvmOverloads constructor(private val divisor: Float = 1F) : ActivationFunction {
+    override fun invoke(x: Float) = x % divisor
+}
+
+/**
  * This function returns a special [Linear] [] [ActivationFunction], which returns its input as output, called
  * [Identity].
  */
